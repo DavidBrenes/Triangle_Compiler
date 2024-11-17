@@ -332,149 +332,149 @@ public class Parser {
 	}
 
 	Command parseSingleCommand() throws SyntaxError {
-		Command commandAST = null; // in case there's a syntactic error
+		Command commandAST = null; // in case there's a syntactic error // Placeholder for the resulting Abstract Syntax Tree (AST) of the command.
 
-		SourcePosition commandPos = new SourcePosition();
-		start(commandPos);
+		SourcePosition commandPos = new SourcePosition(); // Object to track the start and end positions of the command.
+		start(commandPos); // Mark the starting position of the command.
 
-		switch (currentToken.kind) {
+		switch (currentToken.kind) { // Evaluate the type of the current token to decide the command type.
 
-		case Token.IDENTIFIER:
+		case Token.IDENTIFIER: // Handle a command starting with an identifier.
 		{
-			Identifier iAST = parseIdentifier();
-			if (currentToken.kind == Token.LPAREN) {
-				acceptIt();
-				ActualParameterSequence apsAST = parseActualParameterSequence();
-				accept(Token.RPAREN);
-				finish(commandPos);
-				commandAST = new CallCommand(iAST, apsAST, commandPos);
+			Identifier iAST = parseIdentifier(); // Parse the identifier into an AST node.
+			if (currentToken.kind == Token.LPAREN) { // Check if it’s a function or procedure call (followed by "(").
+				acceptIt(); // Consume the "(" token.
+				ActualParameterSequence apsAST = parseActualParameterSequence(); // Parse the parameters in the function/procedure call.
+				accept(Token.RPAREN); // Ensure the call is properly closed with ")".
+				finish(commandPos); // Mark the end position of the command.
+				commandAST = new CallCommand(iAST, apsAST, commandPos); // Create a CallCommand AST node.
 
 			} else {
-				Vname vAST = parseRestOfVname(iAST);
-				accept(Token.BECOMES);
-				Expression eAST = parseExpression();
-				finish(commandPos);
-				commandAST = new AssignCommand(vAST, eAST, commandPos);
+				Vname vAST = parseRestOfVname(iAST);// Parse the remaining part of the variable name if applicable.
+				accept(Token.BECOMES);// Ensure there is an assignment operator.
+				Expression eAST = parseExpression();// Parse the assigned expression.
+				finish(commandPos);// Mark the end position of the command.
+				commandAST = new AssignCommand(vAST, eAST, commandPos);// Create an AssignCommand AST node.
 			}
 		}
 		break;
 
-		case Token.BEGIN:
-			acceptIt();
-			commandAST = parseCommand();
-			accept(Token.END);
+		case Token.BEGIN:// Handle a block of commands.
+			acceptIt();// Consume the "begin" token.
+			commandAST = parseCommand();// Parse the commands inside the block.
+			accept(Token.END);// Ensure the block is closed with "end".
 			break;
 
-		case Token.LET:
+		case Token.LET:// Handle a "let" declaration.
 		{
-			acceptIt();
-			Declaration dAST = parseDeclaration();
-			accept(Token.IN);
-			Command cAST = parseSingleCommand();
-			finish(commandPos);
-			commandAST = new LetCommand(dAST, cAST, commandPos);
+			acceptIt();// Consume the "let" token.
+			Declaration dAST = parseDeclaration();// Parse the declaration.
+			accept(Token.IN);// Ensure "in" keyword follows the declaration.
+			Command cAST = parseSingleCommand();// Parse the command that uses the declaration.
+			finish(commandPos);// Mark the end position of the command.
+			commandAST = new LetCommand(dAST, cAST, commandPos);// Create a LetCommand AST node.
 		}
 		break;
 
-		case Token.CASE:{
-			LinkedHashMap <IntegerLiteral, Command> map = new LinkedHashMap<IntegerLiteral, Command>();
-			acceptIt();
-			Expression eAST = parseExpression();
-			accept(Token.OF);
-			IntegerLiteral iLAST = parseIntegerLiteral();
-			accept(Token.COLON);
-			Command cAST = parseSingleCommand();
-			accept(Token.SEMICOLON);
-			map.put(iLAST, cAST);
-			while(currentToken.kind != Token.ELSE){
-				iLAST = parseIntegerLiteral();
-				accept(Token.COLON);
-				cAST = parseSingleCommand();
-				accept(Token.SEMICOLON);
-				map.put(iLAST, cAST);
+		case Token.CASE:{// Handle a "case" command.
+			LinkedHashMap <IntegerLiteral, Command> map = new LinkedHashMap<IntegerLiteral, Command>();// Create a map to store case branches.
+			acceptIt();// Consume the "case" token.
+			Expression eAST = parseExpression();// Parse the expression being switched on.
+			accept(Token.OF);// Ensure "of" keyword follows.
+			IntegerLiteral iLAST = parseIntegerLiteral();// Parse the first case label.
+			accept(Token.COLON);// Ensure case label ends with ":".
+			Command cAST = parseSingleCommand();// Parse the command for the case.
+			accept(Token.SEMICOLON);// Ensure the case command ends with ";".
+			map.put(iLAST, cAST);// Add the case to the map.
+			while(currentToken.kind != Token.ELSE){// Parse additional cases until an "else" is encountered.
+				iLAST = parseIntegerLiteral();// Parse the next case label.
+				accept(Token.COLON);// Ensure it ends with ":".
+				cAST = parseSingleCommand();// Parse the corresponding command.
+				accept(Token.SEMICOLON);// Ensure it ends with ";".
+				map.put(iLAST, cAST);// Add to the map.
 			}
-			accept(Token.ELSE);
-			accept(Token.COLON);
-			cAST = parseSingleCommand();
-			finish(commandPos);
-			commandAST = new CaseCommand(eAST, map, cAST, commandPos);
+			accept(Token.ELSE);// Consume the "else" token.
+			accept(Token.COLON);// Ensure ":" follows "else".
+			cAST = parseSingleCommand();// Parse the "else" command.
+			finish(commandPos);// Mark the end position of the command.
+			commandAST = new CaseCommand(eAST, map, cAST, commandPos);// Create a CaseCommand AST node.
 		}
 		break;
 
-		case Token.IF:
+		case Token.IF:// Handle an "if-then-else" command.
 		{
-			acceptIt();
-			Expression eAST = parseExpression();
-			accept(Token.THEN);
-			Command c1AST = parseSingleCommand();
-			accept(Token.ELSE);
-			Command c2AST = parseSingleCommand();
-			finish(commandPos);
-			commandAST = new IfCommand(eAST, c1AST, c2AST, commandPos);
+			acceptIt();// Consume the "if" token.
+			Expression eAST = parseExpression();// Parse the condition.
+			accept(Token.THEN);// Ensure "then" follows the condition.
+			Command c1AST = parseSingleCommand();// Parse the "then" command.
+			accept(Token.ELSE);// Ensure "else" follows the "then" command.
+			Command c2AST = parseSingleCommand();// Parse the "else" command.
+			finish(commandPos);// Mark the end position of the command.
+			commandAST = new IfCommand(eAST, c1AST, c2AST, commandPos);// Create an IfCommand AST node.
 		}
 		break;
 
-		case Token.FOR:{
-			acceptIt();
-			Identifier iAST = parseIdentifier();
-			accept(Token.FROM);
-			Expression e1AST = parseExpression();
-			accept(Token.TO);
-			Expression e2AST = parseExpression();
-			accept(Token.DO);
-			Command cAST = parseSingleCommand();
-			finish(commandPos);
-			commandAST = new ForCommand(iAST, e1AST, e2AST, cAST, commandPos);
+		case Token.FOR:{// Handle a "for" loop command.
+			acceptIt();// Consume the "for" token.
+			Identifier iAST = parseIdentifier();// Parse the loop variable.
+			accept(Token.FROM);// Ensure "from" follows the variable.
+			Expression e1AST = parseExpression();// Parse the starting expression.
+			accept(Token.TO);// Ensure "to" follows the starting expression.
+			Expression e2AST = parseExpression();// Parse the ending expression.
+			accept(Token.DO);// Ensure "do" precedes the loop body.
+			Command cAST = parseSingleCommand();// Parse the loop body.
+			finish(commandPos);// Mark the end position of the command.
+			commandAST = new ForCommand(iAST, e1AST, e2AST, cAST, commandPos);// Create a ForCommand AST node.
 		}
 		break;
 
-		case Token.REPEAT:
+		case Token.REPEAT:// Handle a "repeat-until" loop command.
 		{
 			Command cAST;
-			acceptIt();
-			if (currentToken.kind == Token.UNTIL) {
-				cAST = new EmptyCommand(commandPos);
+			acceptIt();// Consume the "repeat" token.
+			if (currentToken.kind == Token.UNTIL) {// Check if loop body is empty.
+				cAST = new EmptyCommand(commandPos);// Create an empty command node.
 			}
 			else{
-				cAST = parseSingleCommand();
+				cAST = parseSingleCommand();// Parse the loop body.
 			}
 
-			accept(Token.UNTIL);
-			Expression eAST = parseExpression();
-			finish(commandPos);
-			commandAST = new RepeatCommand(cAST, eAST, commandPos);
+			accept(Token.UNTIL);// Ensure "until" follows the loop body.
+			Expression eAST = parseExpression();// Parse the condition.
+			finish(commandPos);// Mark the end position of the command.
+			commandAST = new RepeatCommand(cAST, eAST, commandPos);// Create a RepeatCommand AST node.
 		}
 		break;
 
-		case Token.WHILE:
+		case Token.WHILE:// Handle a "while-do" loop command.
 		{
-			acceptIt();
-			Expression eAST = parseExpression();
-			accept(Token.DO);
-			Command cAST = parseSingleCommand();
-			finish(commandPos);
-			commandAST = new WhileCommand(eAST, cAST, commandPos);
+			acceptIt();// Consume the "while" token.
+			Expression eAST = parseExpression();// Parse the condition.
+			accept(Token.DO);// Ensure "do" precedes the loop body.
+			Command cAST = parseSingleCommand();// Parse the loop body.
+			finish(commandPos);// Mark the end position of the command.
+			commandAST = new WhileCommand(eAST, cAST, commandPos);// Create a WhileCommand AST node.
 		}
 		break;
 
-		case Token.SEMICOLON:
-		case Token.END:
-		case Token.ELSE:
-		case Token.IN:
-		case Token.EOT:
+		case Token.SEMICOLON:// Handle empty or no-op commands.
+		case Token.END:// Handle empty or no-op commands.
+		case Token.ELSE:// Handle empty or no-op commands.
+		case Token.IN:// Handle empty or no-op commands.
+		case Token.EOT:// Handle empty or no-op commands.
 
-			finish(commandPos);
-			commandAST = new EmptyCommand(commandPos);
+			finish(commandPos);// Mark the end position of the command.
+			commandAST = new EmptyCommand(commandPos);// Create an EmptyCommand AST node.
 			break;
 
 		default:
-			syntacticError("\"%\" cannot start a command",
-					currentToken.spelling);
+			syntacticError("\"%\" cannot start a command",// Handle unexpected tokens.
+					currentToken.spelling);// Report the error.
 		break;
 
 		}
 
-		return commandAST;
+		return commandAST;// Return the constructed command AST.
 	}
 
 	///////////////////////////////////////////////////////////////////////////////
