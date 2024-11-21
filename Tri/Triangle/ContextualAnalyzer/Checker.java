@@ -17,8 +17,6 @@ package Triangle.ContextualAnalyzer;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-import com.sun.org.apache.bcel.internal.generic.RETURN;
-
 import Triangle.ErrorReporter;
 import Triangle.StdEnvironment;
 import Triangle.AbstractSyntaxTrees.*;
@@ -154,28 +152,47 @@ public final class Checker implements Visitor {
 
 
 	public Object visitCaseCommand(CaseCommand ast, Object o) {
-		idTable.openScope();
-		ast.E.visit(this, null);
-		if(ast.E.type != StdEnvironment.integerType)
-			reporter.reportError("incompatible expression type (Integer Expression expected)", "", ast.position);
-		LinkedHashMap<IntegerLiteral, Command> MAP = ast.MAP;
-		ArrayList<IntegerLiteral> AL = new ArrayList<IntegerLiteral>();
-		for(IntegerLiteral IL : MAP.keySet()){
-			for(IntegerLiteral IL2 : AL){
-				if (IL2.spelling.equals(IL.spelling)){
-					reporter.reportError("re-used integer literal in case", "", ast.position);
+		idTable.openScope(); // Open a new scope for the case command.
+
+		// Evaluate the variable (Vname) being switched on.
+		ast.V.visit(this, null);
+
+		// Ensure the type of the variable matches the expected type.
+		if (ast.V.type != StdEnvironment.integerType && ast.V.type != StdEnvironment.charType) {
+			reporter.reportError("incompatible expression type (Integer or Character Expression expected)", "", ast.position);
+		}
+
+		// Get the map of case labels and their commands.
+		LinkedHashMap<Terminal, Command> MAP = ast.MAP;
+
+		// Keep track of case labels to check for duplicates.
+		ArrayList<Terminal> AL = new ArrayList<>();
+
+		// Process each case label and its associated command.
+		for (Terminal label : MAP.keySet()) {
+			// Check for duplicate labels.
+			for (Terminal existingLabel : AL) {
+				if (existingLabel.spelling.equals(label.spelling)) {
+					reporter.reportError("re-used case literal", "", ast.position);
 				}
 			}
-			Command C = MAP.get(IL);
+
+			// Visit the command associated with the label.
+			Command C = MAP.get(label);
 			C.visit(this, null);
-			IL.visit(this, null);
-			AL.add(IL);
+
+			// Visit the label itself.
+			label.visit(this, null);
+
+			// Add the label to the list of processed labels.
+			AL.add(label);
 		}
-		Command C = ast.C;
-		C.visit(this, null);
+
+		// Close the scope for the case command.
 		idTable.closeScope();
 		return null;
 	}
+
 
 	// Expressions
 

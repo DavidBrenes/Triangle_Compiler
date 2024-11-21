@@ -16,89 +16,8 @@ package Triangle.SyntacticAnalyzer;
 
 import java.util.LinkedHashMap;
 
+import Triangle.AbstractSyntaxTrees.*;
 import Triangle.ErrorReporter;
-import Triangle.AbstractSyntaxTrees.ActualParameter;
-import Triangle.AbstractSyntaxTrees.ActualParameterSequence;
-import Triangle.AbstractSyntaxTrees.AddOperator;
-import Triangle.AbstractSyntaxTrees.ArrayAggregate;
-import Triangle.AbstractSyntaxTrees.ArrayExpression;
-import Triangle.AbstractSyntaxTrees.ArrayTypeDenoter;
-import Triangle.AbstractSyntaxTrees.AssignCommand;
-import Triangle.AbstractSyntaxTrees.AssignDeclaration;
-import Triangle.AbstractSyntaxTrees.BinaryExpression;
-import Triangle.AbstractSyntaxTrees.CallCommand;
-import Triangle.AbstractSyntaxTrees.CallExpression;
-import Triangle.AbstractSyntaxTrees.CaseCommand;
-import Triangle.AbstractSyntaxTrees.CharacterExpression;
-import Triangle.AbstractSyntaxTrees.CharacterLiteral;
-import Triangle.AbstractSyntaxTrees.Command;
-import Triangle.AbstractSyntaxTrees.ConstActualParameter;
-import Triangle.AbstractSyntaxTrees.ConstDeclaration;
-import Triangle.AbstractSyntaxTrees.ConstFormalParameter;
-import Triangle.AbstractSyntaxTrees.ConstStringDeclaration;
-import Triangle.AbstractSyntaxTrees.ConstStringFormalParameter;
-import Triangle.AbstractSyntaxTrees.Declaration;
-import Triangle.AbstractSyntaxTrees.DotVname;
-import Triangle.AbstractSyntaxTrees.EmptyActualParameterSequence;
-import Triangle.AbstractSyntaxTrees.EmptyCommand;
-import Triangle.AbstractSyntaxTrees.EmptyFormalParameterSequence;
-import Triangle.AbstractSyntaxTrees.Expression;
-import Triangle.AbstractSyntaxTrees.FieldTypeDenoter;
-import Triangle.AbstractSyntaxTrees.ForCommand;
-import Triangle.AbstractSyntaxTrees.FormalParameter;
-import Triangle.AbstractSyntaxTrees.FormalParameterSequence;
-import Triangle.AbstractSyntaxTrees.FuncActualParameter;
-import Triangle.AbstractSyntaxTrees.FuncDeclaration;
-import Triangle.AbstractSyntaxTrees.FuncFormalParameter;
-import Triangle.AbstractSyntaxTrees.FuncOperActualParameter;
-import Triangle.AbstractSyntaxTrees.FuncOperDeclaration;
-import Triangle.AbstractSyntaxTrees.FuncOperFormalParameter;
-import Triangle.AbstractSyntaxTrees.Identifier;
-import Triangle.AbstractSyntaxTrees.IfCommand;
-import Triangle.AbstractSyntaxTrees.IfExpression;
-import Triangle.AbstractSyntaxTrees.IntegerExpression;
-import Triangle.AbstractSyntaxTrees.IntegerLiteral;
-import Triangle.AbstractSyntaxTrees.LetCommand;
-import Triangle.AbstractSyntaxTrees.LetExpression;
-import Triangle.AbstractSyntaxTrees.MultExpression;
-import Triangle.AbstractSyntaxTrees.MultOperator;
-import Triangle.AbstractSyntaxTrees.MultipleActualParameterSequence;
-import Triangle.AbstractSyntaxTrees.MultipleArrayAggregate;
-import Triangle.AbstractSyntaxTrees.MultipleFieldTypeDenoter;
-import Triangle.AbstractSyntaxTrees.MultipleFormalParameterSequence;
-import Triangle.AbstractSyntaxTrees.MultipleRecordAggregate;
-import Triangle.AbstractSyntaxTrees.Operator;
-import Triangle.AbstractSyntaxTrees.ProcActualParameter;
-import Triangle.AbstractSyntaxTrees.ProcDeclaration;
-import Triangle.AbstractSyntaxTrees.ProcFormalParameter;
-import Triangle.AbstractSyntaxTrees.Program;
-import Triangle.AbstractSyntaxTrees.RecordAggregate;
-import Triangle.AbstractSyntaxTrees.RecordExpression;
-import Triangle.AbstractSyntaxTrees.RecordTypeDenoter;
-import Triangle.AbstractSyntaxTrees.RepeatCommand;
-import Triangle.AbstractSyntaxTrees.SequentialCommand;
-import Triangle.AbstractSyntaxTrees.SequentialDeclaration;
-import Triangle.AbstractSyntaxTrees.SimpleTypeDenoter;
-import Triangle.AbstractSyntaxTrees.SimpleVname;
-import Triangle.AbstractSyntaxTrees.SingleActualParameterSequence;
-import Triangle.AbstractSyntaxTrees.SingleArrayAggregate;
-import Triangle.AbstractSyntaxTrees.SingleFieldTypeDenoter;
-import Triangle.AbstractSyntaxTrees.SingleFormalParameterSequence;
-import Triangle.AbstractSyntaxTrees.SingleRecordAggregate;
-import Triangle.AbstractSyntaxTrees.StringDeclaration;
-import Triangle.AbstractSyntaxTrees.StringExpression;
-import Triangle.AbstractSyntaxTrees.StringLiteral;
-import Triangle.AbstractSyntaxTrees.StringTypeDenoter;
-import Triangle.AbstractSyntaxTrees.SubscriptVname;
-import Triangle.AbstractSyntaxTrees.TypeDeclaration;
-import Triangle.AbstractSyntaxTrees.TypeDenoter;
-import Triangle.AbstractSyntaxTrees.UnaryExpression;
-import Triangle.AbstractSyntaxTrees.VarActualParameter;
-import Triangle.AbstractSyntaxTrees.VarDeclaration;
-import Triangle.AbstractSyntaxTrees.VarFormalParameter;
-import Triangle.AbstractSyntaxTrees.Vname;
-import Triangle.AbstractSyntaxTrees.VnameExpression;
-import Triangle.AbstractSyntaxTrees.WhileCommand;
 
 public class Parser {
 
@@ -376,7 +295,7 @@ public class Parser {
 		}
 		break;
 
-		case Token.CASE:{// Handle a "case" command.
+		/*case Token.CASE:{// Handle a "case" command.
 			LinkedHashMap <IntegerLiteral, Command> map = new LinkedHashMap<IntegerLiteral, Command>();// Create a map to store case branches.
 			acceptIt();// Consume the "case" token.
 			Expression eAST = parseExpression();// Parse the expression being switched on.
@@ -400,8 +319,41 @@ public class Parser {
 			commandAST = new CaseCommand(eAST, map, cAST, commandPos);// Create a CaseCommand AST node.
 		}
 		break;
+		*/
 
-		case Token.IF:// Handle an "if-then-else" command.
+			case Token.CASE: { // Handle a "case" command.
+				LinkedHashMap<Terminal, Command> map = new LinkedHashMap<Terminal, Command>(); // Create a map to store case branches.
+				acceptIt(); // Consume the "case" token.
+				Vname vAST = parseVname(); // Parse the variable name (V-name) being switched on.
+				accept(Token.OF); // Ensure the "of" keyword follows.
+
+				Terminal caseLabel=null; // Placeholder for case label (Integer or Character literal).
+
+				do { // THERE MUST BE AT LEAST ONE OPTION IN THE CASE, THAT'S WHY WE SHOULD USE DO-WHILE.
+					// Check for the type of the case label.
+					if (currentToken.kind == Token.INTLITERAL) {
+						caseLabel = parseIntegerLiteral(); // Parse an IntegerLiteral.
+					} else if (currentToken.kind == Token.CHARLITERAL) {
+						caseLabel = parseCharacterLiteral(); // Parse a CharacterLiteral.
+					} else {
+						syntacticError("Integer or character literal expected", currentToken.spelling); // Error if invalid label.
+					}
+
+					accept(Token.COLON); // Ensure the label ends with ":".
+					Command cAST = parseSingleCommand(); // Parse the corresponding command.
+					// accept(Token.SEMICOLON); //  HERE IS WHERE WE CAN ADD IF WE LIKE THAT EACH OPTION ENDS WITH AN SPECIFIC VALUE.
+					map.put(caseLabel, cAST); // Add the case to the map.
+
+				} while (currentToken.kind != Token.END); // Continue until the "end" token.
+
+				accept(Token.END); // Consume the "end" token to terminate the case block.
+				finish(commandPos); // Mark the end position of the command.
+				commandAST = new CaseCommand(vAST, map, commandPos); // Create a CaseCommand AST node.
+			}
+			break;
+
+
+			case Token.IF:// Handle an "if-then-else" command.
 		{
 			acceptIt();// Consume the "if" token.
 			Expression eAST = parseExpression();// Parse the condition.

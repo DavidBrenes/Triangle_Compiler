@@ -69,28 +69,47 @@ public final class Encoder implements Visitor {
 
 	public Object visitCaseCommand(CaseCommand ast, Object o) {
 		Frame frame = (Frame) o;
-		// space for boolean of did we use a case.	
-		emit(Machine.PUSHop, 0, 0, 1, ast.getPosition().start);
-		for(IntegerLiteral IL : ast.MAP.keySet()){
-			ast.E.visit(this, frame);
-			emit(Machine.LOADLop, 0, 0, Integer.parseInt(IL.spelling), ast.getPosition().start);
-			emit(Machine.LOADLop, 0,0,1, ast.getPosition().start);
-			emit(Machine.CALLop, Machine.LBr, Machine.PBr, Machine.eqDisplacement, ast.getPosition().start);
-			int jumpAddr = nextInstrAddr;
-			emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, jumpAddr, ast.getPosition().start);
-			ast.MAP.get(IL).visit(this, frame);
-			emit(Machine.LOADLop, 0, 0, 1, ast.getPosition().start);
-			emit(Machine.STOREop, 1, Machine.STr, -2, ast.getPosition().start);
-			patch(jumpAddr, nextInstrAddr);
+		// Space for a boolean indicating if a case was used.
+		emit(Machine.PUSHop, 0, 0, 1, ast.getPosition().start); // Push a false flag (case not matched yet).
+
+		// Evaluate the variable being switched on (ast.V).
+		ast.V.visit(this, frame); // Visit the Vname being evaluated.
+
+		// Iterate through the case branches.
+		for (Terminal label : ast.MAP.keySet()) { // Use Terminal to support both IntegerLiteral and CharacterLiteral.
+			// Load the value of the current case label.
+			if (label instanceof IntegerLiteral) {
+				emit(Machine.LOADLop, 0, 0, Integer.parseInt(((IntegerLiteral) label).spelling), ast.getPosition().start);
+			} else if (label instanceof CharacterLiteral) {
+				emit(Machine.LOADLop, 0, 0, (int) ((CharacterLiteral) label).spelling.charAt(0), ast.getPosition().start);
+			}
+
+			emit(Machine.CALLop, Machine.LBr, Machine.PBr, Machine.eqDisplacement, ast.getPosition().start); // Call equality check.
+
+			int jumpAddr = nextInstrAddr; // Save the address for conditional jump.
+			emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, jumpAddr, ast.getPosition().start); // Jump if condition is false.
+
+			// Visit the command associated with the matching label.
+			ast.MAP.get(label).visit(this, frame);
+
+			emit(Machine.LOADLop, 0, 0, 1, ast.getPosition().start); // Set the case-matched flag to true.
+			emit(Machine.STOREop, 1, Machine.STr, -2, ast.getPosition().start); // Store the flag in the stack.
+
+			patch(jumpAddr, nextInstrAddr); // Patch the jump address to skip to the end of the case.
 		}
-		emit(Machine.LOADop, 1, Machine.STr, -1, ast.getPosition().start);
-		int jumpEndAddr = nextInstrAddr;
-		emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, jumpEndAddr, ast.getPosition().start);
-		ast.C.visit(this, frame);
-		patch(jumpEndAddr, nextInstrAddr);
-		emit(Machine.POPop, 0, 0, 1, ast.getPosition().start);
-		return null;
+
+		// If no case was matched, fall through to the default handling.
+		emit(Machine.LOADop, 1, Machine.STr, -1, ast.getPosition().start); // Load the case-matched flag.
+		int jumpEndAddr = nextInstrAddr; // Save the address for the final conditional jump.
+		emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, jumpEndAddr, ast.getPosition().start); // Jump if a case was matched.
+
+		// If no match, consider implementing a default action or error handling (not present in the current CaseCommand).
+		patch(jumpEndAddr, nextInstrAddr); // Patch the jump address to the end of the case block.
+
+		emit(Machine.POPop, 0, 0, 1, ast.getPosition().start); // Pop the case-matched flag off the stack.
+		return null; // Return null as this is a void operation.
 	}
+
 
 	public Object visitEmptyCommand(EmptyCommand ast, Object o) {
 		return null;

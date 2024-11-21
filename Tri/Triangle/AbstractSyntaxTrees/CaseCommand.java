@@ -6,16 +6,14 @@ import Triangle.SyntacticAnalyzer.SourcePosition;
 
 public class CaseCommand extends Command {
 
-	public LinkedHashMap<IntegerLiteral, Command> MAP;
-	public Command C;
-	public Expression E;
+	public LinkedHashMap<Terminal, Command> MAP;
+	public Vname V;
 
-	public CaseCommand(Expression eAST, LinkedHashMap<IntegerLiteral, Command> map, Command cAST,
+	public CaseCommand(Vname vAST, LinkedHashMap<Terminal, Command> map,
 			SourcePosition thePosition) {
 		super(thePosition);
-		E = eAST;
+		V = vAST;
 		MAP = map;
-		C = cAST;		
 	}
 
 	public Object visit(Visitor v, Object o) {
@@ -24,11 +22,10 @@ public class CaseCommand extends Command {
 	  
 	  public void display(int indent) {
 		  super.display(indent);
-		  E.display(indent + 1);
-		  for(IntegerLiteral IL : MAP.keySet()){
-			  IL.display(indent+1);
-			  MAP.get(IL).display(indent+1);
+		  V.display(indent + 1);
+		  for(Terminal T : MAP.keySet()){
+			  T.display(indent+1);
+			  MAP.get(T).display(indent+1);
 		  }
-		  C.display(indent+1);
 	  }
 }
