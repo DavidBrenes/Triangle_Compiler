@@ -52,8 +52,10 @@ final class Token extends Object {
   }
 
   public String toString() {
-    return "Kind=" + kind + ", spelling=" + spelling +
-      ", position=" + position;
+    return "Kind=" + kind +
+            ", KindName=" + (kind >= 0 && kind < tokenTable.length ? tokenTable[kind] : "<unknown>") +
+            ", spelling=" + spelling +
+            ", position=" + position;
   }
 
   // Token classes...

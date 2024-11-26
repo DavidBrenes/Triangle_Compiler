@@ -1,7 +1,5 @@
-! Test of while command, it runs correctly
-
-while true do
-    let                 ! this is a Let-Command
-        var i : Integer
-    in 
-        i := 2
+mes := case hoy.mes of
+ 1 : 31
+ 2 : 28
+ 3 : 31
+ end

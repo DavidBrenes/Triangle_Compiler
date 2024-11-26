@@ -203,14 +203,15 @@ public class Parser {
 
   Command parseSingleCommand() throws SyntaxError {
     Command commandAST = null; // in case there's a syntactic error
-
+    //System.out.println(currentToken.toString());
     SourcePosition commandPos = new SourcePosition();
     start(commandPos);
-
+    //System.out.println(currentToken.toString());
     switch (currentToken.kind) {
 
     case Token.IDENTIFIER:
       {
+        //System.out.println(currentToken.toString());
         Identifier iAST = parseIdentifier();
         if (currentToken.kind == Token.LPAREN) {
           acceptIt();
@@ -220,8 +221,9 @@ public class Parser {
           commandAST = new CallCommand(iAST, apsAST, commandPos);
 
         } else {
-
+          //System.out.println(currentToken.toString());
           Vname vAST = parseRestOfVname(iAST);
+          //System.out.println(currentToken.toString());
           accept(Token.BECOMES);
           Expression eAST = parseExpression();
           finish(commandPos);
@@ -288,7 +290,7 @@ public class Parser {
 /*
     case Token.CASE:
       {
-        LinkedHashMap <IntegerLiteral, Command> 
+        LinkedHashMap <IntegerLiteral, Command>
         map = new LinkedHashMap<IntegerLiteral, Command>();
         acceptIt();
         Expression eAST = parseExpression();
@@ -314,6 +316,7 @@ public class Parser {
       break;
   */
       case Token.CASE: { // Handle a "case" command.
+        //System.out.println(currentToken.toString());
         LinkedHashMap<Terminal, Command> map = new LinkedHashMap<Terminal, Command>(); // Create a map to store case branches.
         acceptIt(); // Consume the "case" token.
         Vname vAST = parseVname(); // Parse the variable name (V-name) being switched on.
