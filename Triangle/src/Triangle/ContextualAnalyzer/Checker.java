@@ -269,6 +269,42 @@ public final class Checker implements Visitor {
     return ast.type;
   }
 
+  public Object visitCaseExpression(CaseExpression ast, Object o) {
+    idTable.openScope(); // Open a new scope for the case expression.
+
+    // Check the type of the case variable.
+    ast.V.visit(this, null);
+    if (ast.V.type != StdEnvironment.integerType && ast.V.type != StdEnvironment.charType) {
+      reporter.reportError("incompatible variable type (Integer or Character expected)", "", ast.position);
+    }
+
+    // Validate the case labels and their corresponding expressions.
+    LinkedHashMap<Terminal, Expression> MAP = ast.MAP;
+    HashSet<String> usedLabels = new HashSet<>(); // To ensure labels are unique.
+
+    for (Terminal label : MAP.keySet()) {
+      // Check if the label is a valid IntegerLiteral or CharacterLiteral.
+      if (!(label instanceof IntegerLiteral || label instanceof CharacterLiteral)) {
+        reporter.reportError("invalid case label (Integer or Character literal expected)", "", label.position);
+      }
+
+      // Ensure no duplicate case labels.
+      if (usedLabels.contains(label.spelling)) {
+        reporter.reportError("duplicate case label: " + label.spelling, "", label.position);
+      } else {
+        usedLabels.add(label.spelling);
+      }
+
+      // Visit the label and its corresponding expression.
+      label.visit(this, null);
+      Expression expression = MAP.get(label);
+      expression.visit(this, null);
+    }
+
+    idTable.closeScope(); // Close the scope.
+    return null;
+  }
+
   // Declarations
 
   // Always returns null. Does not use the given object.

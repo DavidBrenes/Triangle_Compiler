@@ -23,6 +23,7 @@ final class Token extends Object {
 
   public Token(int kind, String spelling, SourcePosition position) {
 
+    if (spelling.equals("case")) kind = Token.CASE;
     if (kind == Token.IDENTIFIER) {
       int currentKind = firstReservedWord;
       boolean searching = true;
@@ -89,7 +90,7 @@ final class Token extends Object {
     TYPE		= 21,
     VAR			= 22,
     WHILE		= 23,
-  CASE        = 38,      // add'
+    CASE        = 38,      // add
 
     // punctuation...
     DOT			= 24,
@@ -150,7 +151,7 @@ final class Token extends Object {
     "}",
     "",
     "<error>",
-  "case"
+    "case"
   };
 
   private final static int	firstReservedWord = Token.ARRAY,

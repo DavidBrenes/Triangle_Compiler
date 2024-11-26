@@ -98,6 +98,8 @@ public final class Encoder implements Visitor {
   }
 
 
+
+
   public Object visitEmptyCommand(EmptyCommand ast, Object o) {
     return null;
   }
@@ -259,6 +261,58 @@ public final class Encoder implements Visitor {
     Integer valSize = (Integer) ast.type.visit(this, null);
     encodeFetch(ast.V, frame, valSize.intValue());
     return valSize;
+  }
+
+
+  public Object visitCaseExpression(CaseExpression ast, Object o) {
+    Frame frame = (Frame) o;
+
+    // Save space for the result of matching the case variable.
+    emit(Machine.PUSHop, 0, 0, 1);
+
+    // Generate code to evaluate the case variable.
+    ast.V.visit(this, frame);
+
+    // Iterate over each case in the map.
+    for (Terminal caseLabel : ast.MAP.keySet()) {
+      // Load the case variable and the case label.
+      emit(Machine.LOADop, 1, Machine.STr, -1); // Load the case variable.
+      if (caseLabel instanceof IntegerLiteral) {
+        emit(Machine.LOADLop, 0, 0, Integer.parseInt(caseLabel.spelling));
+      } else if (caseLabel instanceof CharacterLiteral) {
+        emit(Machine.LOADLop, 0, 0, (int) caseLabel.spelling.charAt(0));
+      }
+
+      // Compare the case variable with the label.
+      emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.eqDisplacement);
+
+      // Conditionally jump to the case body if match found.
+      int jumpAddr = nextInstrAddr;
+      emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, jumpAddr);
+
+      // Visit the expression associated with this case label.
+      ast.MAP.get(caseLabel).visit(this, frame);
+
+      // Jump to the end of the case expression after executing the case body.
+      int jumpEndAddr = nextInstrAddr;
+      emit(Machine.JUMPop, 0, Machine.CBr, jumpEndAddr);
+
+      // Patch the jump address for the failed match.
+      patch(jumpAddr, nextInstrAddr);
+    }
+
+    // Default behavior if no case matches.
+    emit(Machine.LOADLop, 0, 0, 0); // Default: no case matched.
+    int defaultEndAddr = nextInstrAddr;
+    emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, defaultEndAddr);
+
+    // Finalize the case expression.
+    patch(defaultEndAddr, nextInstrAddr);
+
+    // Pop the space reserved for the match result.
+    emit(Machine.POPop, 0, 0, 1);
+
+    return null;
   }
 
 

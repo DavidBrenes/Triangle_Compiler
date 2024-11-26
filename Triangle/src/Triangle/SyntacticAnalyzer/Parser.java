@@ -67,10 +67,28 @@ public class Parser {
   }
 
   void syntacticError(String messageTemplate, String tokenQuoted) throws SyntaxError {
+    // Print the current token's information
+    //System.out.println(currentToken.toString());
+
+    // Get the current source position
     SourcePosition pos = currentToken.position;
+
+    // Report the error
     errorReporter.reportError(messageTemplate, tokenQuoted, pos);
-    throw(new SyntaxError());
+
+    // Print where this method was called from
+    Exception e = new Exception();
+    StackTraceElement[] stackTrace = e.getStackTrace();
+    if (stackTrace.length > 1) {
+      // The caller is the second element in the stack trace
+      StackTraceElement caller = stackTrace[1];
+      System.out.println("syntacticError called from: " + caller.toString());
+    }
+
+    // Throw the SyntaxError exception
+    throw new SyntaxError();
   }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -221,9 +239,7 @@ public class Parser {
           commandAST = new CallCommand(iAST, apsAST, commandPos);
 
         } else {
-          //System.out.println(currentToken.toString());
           Vname vAST = parseRestOfVname(iAST);
-          //System.out.println(currentToken.toString());
           accept(Token.BECOMES);
           Expression eAST = parseExpression();
           finish(commandPos);
@@ -378,6 +394,8 @@ public class Parser {
     SourcePosition expressionPos = new SourcePosition();
 
     start (expressionPos);
+   //System.out.println(currentToken.toString());
+
 
     switch (currentToken.kind) {
 
@@ -402,6 +420,38 @@ public class Parser {
         Expression e3AST = parseExpression();
         finish(expressionPos);
         expressionAST = new IfExpression(e1AST, e2AST, e3AST, expressionPos);
+      }
+      break;
+    case Token.CASE:
+      {
+        LinkedHashMap<Terminal, Expression> map = new LinkedHashMap<Terminal, Expression>(); // Create a map to store case branches.
+        acceptIt(); // Consume the "case" token.
+        Vname vAST = parseVname(); // Parse the variable name (V-name) being switched on.
+        accept(Token.OF); // Ensure the "of" keyword follows.
+
+        Terminal caseLabel=null; // Placeholder for case label (Integer or Character literal).
+
+        do { // THERE MUST BE AT LEAST ONE OPTION IN THE CASE, THAT'S WHY WE SHOULD USE DO-WHILE.
+          // Check for the type of the case label.
+          if (currentToken.kind == Token.INTLITERAL) {
+            caseLabel = parseIntegerLiteral(); // Parse an IntegerLiteral.
+          } else if (currentToken.kind == Token.CHARLITERAL) {
+            caseLabel = parseCharacterLiteral(); // Parse a CharacterLiteral.
+          } else {
+            syntacticError("Integer or character literal expected", currentToken.spelling); // Error if invalid label.
+          }
+
+          accept(Token.COLON); // Ensure the label ends with ":".
+          Expression cAST = parseExpression(); // Parse the corresponding expression.
+          // accept(Token.SEMICOLON); //  HERE IS WHERE WE CAN ADD IF WE LIKE THAT EACH OPTION ENDS WITH AN SPECIFIC VALUE.
+          map.put(caseLabel, cAST); // Add the case to the map.
+
+        } while (currentToken.kind != Token.END); // Continue until the "end" token.
+
+        accept(Token.END); // Consume the "end" token to terminate the case block.
+        finish(expressionPos); // Mark the end position of the expression.
+        expressionAST = new CaseExpression(vAST, map, expressionPos);
+
       }
       break;
 

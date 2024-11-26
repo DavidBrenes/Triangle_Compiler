@@ -207,6 +207,7 @@ public final class Scanner {
 
     pos.finish = sourceFile.getCurrentLine();
     tok = new Token(kind, currentSpelling.toString(), pos);
+    //System.out.println("SCANNER = [KIND]"+kind+ " - [SPELLING]"+currentSpelling.toString()+" - "+ tok.toString());
     if (debug)
       System.out.println(tok);
     return tok;

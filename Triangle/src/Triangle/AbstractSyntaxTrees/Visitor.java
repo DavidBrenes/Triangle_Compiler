@@ -25,12 +25,13 @@ public interface Visitor {
   public abstract Object visitSequentialCommand(SequentialCommand ast, Object o);
   public abstract Object visitWhileCommand(WhileCommand ast, Object o);
   public abstract Object visitForCommand(ForCommand ast, Object o);
+  public abstract Object visitCaseCommand(CaseCommand caseCommand, Object o);
 
   // Expressions
   public abstract Object visitArrayExpression(ArrayExpression ast, Object o);
   public abstract Object visitBinaryExpression(BinaryExpression ast, Object o);
   public abstract Object visitCallExpression(CallExpression ast, Object o);
-  public abstract Object visitCaseCommand(CaseCommand caseCommand, Object o);
+  public abstract Object visitCaseExpression(CaseExpression caseExpression, Object o);
   public abstract Object visitCharacterExpression(CharacterExpression ast, Object o);
   public abstract Object visitEmptyExpression(EmptyExpression ast, Object o);
   public abstract Object visitIfExpression(IfExpression ast, Object o);
