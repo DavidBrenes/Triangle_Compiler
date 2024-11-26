@@ -15,6 +15,7 @@
 package Triangle.ContextualAnalyzer;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 
 import Triangle.ErrorReporter;
@@ -106,28 +107,41 @@ public final class Checker implements Visitor {
   }
 
   public Object visitCaseCommand(CaseCommand ast, Object o) {
-    idTable.openScope();
-    ast.E.visit(this, null);
-    if(ast.E.type != StdEnvironment.integerType)
-      reporter.reportError("incompatible expression type (Integer Expression expected)", "", ast.position);
-    LinkedHashMap<IntegerLiteral, Command> MAP = ast.MAP;
-    ArrayList<IntegerLiteral> AL = new ArrayList<IntegerLiteral>();
-    for(IntegerLiteral IL : MAP.keySet()){
-            for(IntegerLiteral IL2 : AL){
-                if (IL2.spelling.equals(IL.spelling)){
-                    reporter.reportError("re-used integer literal in case", "", ast.position);
-                }
-            }
-            Command C = MAP.get(IL);
-            C.visit(this, null);
-            IL.visit(this, null);
-            AL.add(IL);
-        }
-        Command C = ast.C;
-        C.visit(this, null);
-        idTable.closeScope();
-        return null;
+    idTable.openScope(); // Open a new scope for the case command.
+
+    // Check the type of the case variable.
+    ast.V.visit(this, null);
+    if (ast.V.type != StdEnvironment.integerType && ast.V.type != StdEnvironment.charType) {
+      reporter.reportError("incompatible variable type (Integer or Character expected)", "", ast.position);
+    }
+
+    // Validate the case labels and their corresponding commands.
+    LinkedHashMap<Terminal, Command> MAP = ast.MAP;
+    HashSet<String> usedLabels = new HashSet<>(); // To ensure labels are unique.
+
+    for (Terminal label : MAP.keySet()) {
+      // Check if the label is a valid IntegerLiteral or CharacterLiteral.
+      if (!(label instanceof IntegerLiteral || label instanceof CharacterLiteral)) {
+        reporter.reportError("invalid case label (Integer or Character literal expected)", "", label.position);
+      }
+
+      // Ensure no duplicate case labels.
+      if (usedLabels.contains(label.spelling)) {
+        reporter.reportError("duplicate case label: " + label.spelling, "", label.position);
+      } else {
+        usedLabels.add(label.spelling);
+      }
+
+      // Visit the label and its corresponding command.
+      label.visit(this, null);
+      Command command = MAP.get(label);
+      command.visit(this, null);
+    }
+
+    idTable.closeScope(); // Close the scope.
+    return null;
   }
+
 
   // Expressions
 

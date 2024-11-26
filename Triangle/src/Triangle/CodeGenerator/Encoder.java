@@ -23,76 +23,9 @@ import javax.swing.text.TableView.TableRow;
 
 import TAM.Instruction;
 import TAM.Machine;
+import Triangle.AbstractSyntaxTrees.*;
 import Triangle.ErrorReporter;
 import Triangle.StdEnvironment;
-import Triangle.AbstractSyntaxTrees.AST;
-import Triangle.AbstractSyntaxTrees.AnyTypeDenoter;
-import Triangle.AbstractSyntaxTrees.ArrayExpression;
-import Triangle.AbstractSyntaxTrees.ArrayTypeDenoter;
-import Triangle.AbstractSyntaxTrees.AssignCommand;
-import Triangle.AbstractSyntaxTrees.BinaryExpression;
-import Triangle.AbstractSyntaxTrees.BinaryOperatorDeclaration;
-import Triangle.AbstractSyntaxTrees.BoolTypeDenoter;
-import Triangle.AbstractSyntaxTrees.CallCommand;
-import Triangle.AbstractSyntaxTrees.CallExpression;
-import Triangle.AbstractSyntaxTrees.CharTypeDenoter;
-import Triangle.AbstractSyntaxTrees.CharacterExpression;
-import Triangle.AbstractSyntaxTrees.CharacterLiteral;
-import Triangle.AbstractSyntaxTrees.ConstActualParameter;
-import Triangle.AbstractSyntaxTrees.ConstDeclaration;
-import Triangle.AbstractSyntaxTrees.ConstFormalParameter;
-import Triangle.AbstractSyntaxTrees.Declaration;
-import Triangle.AbstractSyntaxTrees.DotVname;
-import Triangle.AbstractSyntaxTrees.EmptyActualParameterSequence;
-import Triangle.AbstractSyntaxTrees.EmptyCommand;
-import Triangle.AbstractSyntaxTrees.EmptyExpression;
-import Triangle.AbstractSyntaxTrees.EmptyFormalParameterSequence;
-import Triangle.AbstractSyntaxTrees.ErrorTypeDenoter;
-import Triangle.AbstractSyntaxTrees.FuncActualParameter;
-import Triangle.AbstractSyntaxTrees.FuncDeclaration;
-import Triangle.AbstractSyntaxTrees.FuncFormalParameter;
-import Triangle.AbstractSyntaxTrees.Identifier;
-import Triangle.AbstractSyntaxTrees.IfCommand;
-import Triangle.AbstractSyntaxTrees.IfExpression;
-import Triangle.AbstractSyntaxTrees.IntTypeDenoter;
-import Triangle.AbstractSyntaxTrees.IntegerExpression;
-import Triangle.AbstractSyntaxTrees.IntegerLiteral;
-import Triangle.AbstractSyntaxTrees.LetCommand;
-import Triangle.AbstractSyntaxTrees.LetExpression;
-import Triangle.AbstractSyntaxTrees.MultipleActualParameterSequence;
-import Triangle.AbstractSyntaxTrees.MultipleArrayAggregate;
-import Triangle.AbstractSyntaxTrees.MultipleFieldTypeDenoter;
-import Triangle.AbstractSyntaxTrees.MultipleFormalParameterSequence;
-import Triangle.AbstractSyntaxTrees.MultipleRecordAggregate;
-import Triangle.AbstractSyntaxTrees.Operator;
-import Triangle.AbstractSyntaxTrees.ProcActualParameter;
-import Triangle.AbstractSyntaxTrees.ProcDeclaration;
-import Triangle.AbstractSyntaxTrees.ProcFormalParameter;
-import Triangle.AbstractSyntaxTrees.Program;
-import Triangle.AbstractSyntaxTrees.RecordExpression;
-import Triangle.AbstractSyntaxTrees.RecordTypeDenoter;
-import Triangle.AbstractSyntaxTrees.SequentialCommand;
-import Triangle.AbstractSyntaxTrees.SequentialDeclaration;
-import Triangle.AbstractSyntaxTrees.SimpleTypeDenoter;
-import Triangle.AbstractSyntaxTrees.SimpleVname;
-import Triangle.AbstractSyntaxTrees.SingleActualParameterSequence;
-import Triangle.AbstractSyntaxTrees.SingleArrayAggregate;
-import Triangle.AbstractSyntaxTrees.SingleFieldTypeDenoter;
-import Triangle.AbstractSyntaxTrees.SingleFormalParameterSequence;
-import Triangle.AbstractSyntaxTrees.SingleRecordAggregate;
-import Triangle.AbstractSyntaxTrees.SubscriptVname;
-import Triangle.AbstractSyntaxTrees.TypeDeclaration;
-import Triangle.AbstractSyntaxTrees.UnaryExpression;
-import Triangle.AbstractSyntaxTrees.UnaryOperatorDeclaration;
-import Triangle.AbstractSyntaxTrees.VarActualParameter;
-import Triangle.AbstractSyntaxTrees.VarDeclaration;
-import Triangle.AbstractSyntaxTrees.VarFormalParameter;
-import Triangle.AbstractSyntaxTrees.Visitor;
-import Triangle.AbstractSyntaxTrees.Vname;
-import Triangle.AbstractSyntaxTrees.VnameExpression;
-import Triangle.AbstractSyntaxTrees.WhileCommand;
-import Triangle.AbstractSyntaxTrees.ForCommand;
-import Triangle.AbstractSyntaxTrees.CaseCommand;
 
 public final class Encoder implements Visitor {
 
@@ -114,29 +47,56 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitCaseCommand(CaseCommand ast, Object o) {
-        Frame frame = (Frame) o;
-        // space for boolean of did we use a case.
-        emit(Machine.PUSHop, 0, 0, 1);
-        for(IntegerLiteral IL : ast.MAP.keySet()){
-            ast.E.visit(this, frame);
-            emit(Machine.LOADLop, 0, 0, Integer.parseInt(IL.spelling));
-            emit(Machine.LOADLop, 0,0,1);
-            emit(Machine.CALLop, Machine.LBr, Machine.PBr, Machine.eqDisplacement);
-            int jumpAddr = nextInstrAddr;
-            emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, jumpAddr);
-            ast.MAP.get(IL).visit(this, frame);
-            emit(Machine.LOADLop, 0, 0, 1);
-            emit(Machine.STOREop, 1, Machine.STr, -2);
-            patch(jumpAddr, nextInstrAddr);
-        }
-        emit(Machine.LOADop, 1, Machine.STr, -1);
-        int jumpEndAddr = nextInstrAddr;
-        emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, jumpEndAddr);
-        ast.C.visit(this, frame);
-        patch(jumpEndAddr, nextInstrAddr);
-        emit(Machine.POPop, 0, 0, 1);
-        return null;
+    Frame frame = (Frame) o;
+
+    // Save space for the result of matching the case variable.
+    emit(Machine.PUSHop, 0, 0, 1);
+
+    // Generate code to evaluate the case variable.
+    ast.V.visit(this, frame);
+
+    // Iterate over each case in the map.
+    for (Terminal caseLabel : ast.MAP.keySet()) {
+      // Load the case variable and the case label.
+      emit(Machine.LOADop, 1, Machine.STr, -1); // Load the case variable.
+      if (caseLabel instanceof IntegerLiteral) {
+        emit(Machine.LOADLop, 0, 0, Integer.parseInt(caseLabel.spelling));
+      } else if (caseLabel instanceof CharacterLiteral) {
+        emit(Machine.LOADLop, 0, 0, (int) caseLabel.spelling.charAt(0));
+      }
+
+      // Compare the case variable with the label.
+      emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.eqDisplacement);
+
+      // Conditionally jump to the case body if match found.
+      int jumpAddr = nextInstrAddr;
+      emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, jumpAddr);
+
+      // Visit the command associated with this case label.
+      ast.MAP.get(caseLabel).visit(this, frame);
+
+      // Jump to the end of the case command after executing the case body.
+      int jumpEndAddr = nextInstrAddr;
+      emit(Machine.JUMPop, 0, Machine.CBr, jumpEndAddr);
+
+      // Patch the jump address for the failed match.
+      patch(jumpAddr, nextInstrAddr);
     }
+
+    // Default behavior if no case matches.
+    emit(Machine.LOADLop, 0, 0, 0); // Default: no case matched.
+    int defaultEndAddr = nextInstrAddr;
+    emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, defaultEndAddr);
+
+    // Finalize the case command.
+    patch(defaultEndAddr, nextInstrAddr);
+
+    // Pop the space reserved for the match result.
+    emit(Machine.POPop, 0, 0, 1);
+
+    return null;
+  }
+
 
   public Object visitEmptyCommand(EmptyCommand ast, Object o) {
     return null;

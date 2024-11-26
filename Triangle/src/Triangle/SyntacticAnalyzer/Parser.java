@@ -285,7 +285,7 @@ public class Parser {
         commandAST = new ForCommand(vAST, e1AST, e2AST, cAST, commandPos);
       }
       break;
-
+/*
     case Token.CASE:
       {
         LinkedHashMap <IntegerLiteral, Command> 
@@ -312,7 +312,37 @@ public class Parser {
         commandAST = new CaseCommand(eAST, map, cAST, commandPos);
       }
       break;
+  */
+      case Token.CASE: { // Handle a "case" command.
+        LinkedHashMap<Terminal, Command> map = new LinkedHashMap<Terminal, Command>(); // Create a map to store case branches.
+        acceptIt(); // Consume the "case" token.
+        Vname vAST = parseVname(); // Parse the variable name (V-name) being switched on.
+        accept(Token.OF); // Ensure the "of" keyword follows.
 
+        Terminal caseLabel=null; // Placeholder for case label (Integer or Character literal).
+
+        do { // THERE MUST BE AT LEAST ONE OPTION IN THE CASE, THAT'S WHY WE SHOULD USE DO-WHILE.
+          // Check for the type of the case label.
+          if (currentToken.kind == Token.INTLITERAL) {
+            caseLabel = parseIntegerLiteral(); // Parse an IntegerLiteral.
+          } else if (currentToken.kind == Token.CHARLITERAL) {
+            caseLabel = parseCharacterLiteral(); // Parse a CharacterLiteral.
+          } else {
+            syntacticError("Integer or character literal expected", currentToken.spelling); // Error if invalid label.
+          }
+
+          accept(Token.COLON); // Ensure the label ends with ":".
+          Command cAST = parseSingleCommand(); // Parse the corresponding command.
+          // accept(Token.SEMICOLON); //  HERE IS WHERE WE CAN ADD IF WE LIKE THAT EACH OPTION ENDS WITH AN SPECIFIC VALUE.
+          map.put(caseLabel, cAST); // Add the case to the map.
+
+        } while (currentToken.kind != Token.END); // Continue until the "end" token.
+
+        accept(Token.END); // Consume the "end" token to terminate the case block.
+        finish(commandPos); // Mark the end position of the command.
+        commandAST = new CaseCommand(vAST, map, commandPos); // Create a CaseCommand AST node.
+      }
+      break;
     case Token.SEMICOLON:
     case Token.END:
     case Token.ELSE:
