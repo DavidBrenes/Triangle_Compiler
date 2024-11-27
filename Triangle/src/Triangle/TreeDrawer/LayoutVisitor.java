@@ -64,6 +64,7 @@ public class LayoutVisitor implements Visitor {
 
   public Object visitCaseCommand(CaseCommand caseCommand, Object o) {
     // TODO Auto-generated method stub
+    System.out.println("visitCaseCommand FUNCTION WAS CALLED IN LAYOUT VISITOR");
     return null;
 }
 
@@ -113,7 +114,7 @@ public class LayoutVisitor implements Visitor {
   }
 
   public Object visitCaseExpression(CaseExpression caseExpression, Object o) {
-    // TODO Auto-generated method stub
+    System.out.println("visitCaseExpression FUNCTION WAS CALLED IN LAYOUT VISITOR");
     return null;
   }
 

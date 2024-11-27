@@ -1,6 +1,7 @@
 let
     var hoy : Integer;
-    var diasEnMes : Integer
+    var diasEnMes : Integer;
+
 in
 begin
     hoy := 3;
@@ -18,5 +19,4 @@ begin
         11: 30
         12: 31
     end;
-    putint(diasEnMes)
-end
+end;

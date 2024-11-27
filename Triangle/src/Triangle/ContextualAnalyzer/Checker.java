@@ -107,40 +107,38 @@ public final class Checker implements Visitor {
   }
 
   public Object visitCaseCommand(CaseCommand ast, Object o) {
-    idTable.openScope(); // Open a new scope for the case command.
+    System.out.println("visitCaseCommand FUNCTION WAS CALLED IN CHECKER");
+    idTable.openScope();
 
-    // Check the type of the case variable.
+    // Check if V-name supports both integer and character types
     ast.V.visit(this, null);
     if (ast.V.type != StdEnvironment.integerType && ast.V.type != StdEnvironment.charType) {
-      reporter.reportError("incompatible variable type (Integer or Character expected)", "", ast.position);
+      reporter.reportError("incompatible type in case variable (Integer or Character type expected)", "", ast.position);
     }
 
-    // Validate the case labels and their corresponding commands.
     LinkedHashMap<Terminal, Command> MAP = ast.MAP;
-    HashSet<String> usedLabels = new HashSet<>(); // To ensure labels are unique.
+    ArrayList<String> usedLiterals = new ArrayList<>();
 
-    for (Terminal label : MAP.keySet()) {
-      // Check if the label is a valid IntegerLiteral or CharacterLiteral.
-      if (!(label instanceof IntegerLiteral || label instanceof CharacterLiteral)) {
-        reporter.reportError("invalid case label (Integer or Character literal expected)", "", label.position);
-      }
+    for (Terminal terminal : MAP.keySet()) {
+      String literalValue = terminal.spelling;
 
-      // Ensure no duplicate case labels.
-      if (usedLabels.contains(label.spelling)) {
-        reporter.reportError("duplicate case label: " + label.spelling, "", label.position);
+      // Check for duplicate literals
+      if (usedLiterals.contains(literalValue)) {
+        reporter.reportError("re-used literal in case", literalValue, ast.position);
       } else {
-        usedLabels.add(label.spelling);
+        usedLiterals.add(literalValue);
       }
 
-      // Visit the label and its corresponding command.
-      label.visit(this, null);
-      Command command = MAP.get(label);
+      // Visit the terminal and its associated command
+      terminal.visit(this, null);
+      Command command = MAP.get(terminal);
       command.visit(this, null);
     }
 
-    idTable.closeScope(); // Close the scope.
+    idTable.closeScope();
     return null;
   }
+
 
 
   // Expressions
@@ -270,38 +268,35 @@ public final class Checker implements Visitor {
   }
 
   public Object visitCaseExpression(CaseExpression ast, Object o) {
-    idTable.openScope(); // Open a new scope for the case expression.
+    System.out.println("visitCaseExpression FUNCTION WAS CALLED IN CHECKER");
+    idTable.openScope();
 
-    // Check the type of the case variable.
+    // Check if V-name supports both integer and character types
     ast.V.visit(this, null);
     if (ast.V.type != StdEnvironment.integerType && ast.V.type != StdEnvironment.charType) {
-      reporter.reportError("incompatible variable type (Integer or Character expected)", "", ast.position);
+      reporter.reportError("incompatible type in case variable (Integer or Character type expected)", "", ast.position);
     }
 
-    // Validate the case labels and their corresponding expressions.
     LinkedHashMap<Terminal, Expression> MAP = ast.MAP;
-    HashSet<String> usedLabels = new HashSet<>(); // To ensure labels are unique.
+    ArrayList<String> usedLiterals = new ArrayList<>();
 
-    for (Terminal label : MAP.keySet()) {
-      // Check if the label is a valid IntegerLiteral or CharacterLiteral.
-      if (!(label instanceof IntegerLiteral || label instanceof CharacterLiteral)) {
-        reporter.reportError("invalid case label (Integer or Character literal expected)", "", label.position);
-      }
+    for (Terminal terminal : MAP.keySet()) {
+      String literalValue = terminal.spelling;
 
-      // Ensure no duplicate case labels.
-      if (usedLabels.contains(label.spelling)) {
-        reporter.reportError("duplicate case label: " + label.spelling, "", label.position);
+      // Check for duplicate literals
+      if (usedLiterals.contains(literalValue)) {
+        reporter.reportError("re-used literal in case", literalValue, ast.position);
       } else {
-        usedLabels.add(label.spelling);
+        usedLiterals.add(literalValue);
       }
 
-      // Visit the label and its corresponding expression.
-      label.visit(this, null);
-      Expression expression = MAP.get(label);
+      // Visit the terminal and its associated command
+      terminal.visit(this, null);
+      Expression expression = MAP.get(terminal);
       expression.visit(this, null);
     }
 
-    idTable.closeScope(); // Close the scope.
+    idTable.closeScope();
     return null;
   }
 

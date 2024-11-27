@@ -47,6 +47,8 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitCaseCommand(CaseCommand ast, Object o) {
+
+    System.out.println("visitCaseCommand FUNCTION WAS CALLED IN ENCODER");
     Frame frame = (Frame) o;
 
     // Save space for the result of matching the case variable.
@@ -265,6 +267,9 @@ public final class Encoder implements Visitor {
 
 
   public Object visitCaseExpression(CaseExpression ast, Object o) {
+
+    System.out.println("visitCaseExpression FUNCTION WAS CALLED IN ENCODER");
+
     Frame frame = (Frame) o;
 
     // Save space for the result of matching the case variable.
