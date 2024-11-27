@@ -1,0 +1,8 @@
+let
+    var flag: Boolean
+in
+    flag := false;
+    repeat
+        flag := !flag
+    until flag
+end

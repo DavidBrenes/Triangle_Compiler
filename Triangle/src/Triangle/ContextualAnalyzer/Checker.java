@@ -76,6 +76,25 @@ public final class Checker implements Visitor {
     return null;
   }
 
+  //NUEVO JOSEPH REPEAT
+  public Object visitRepeatCommand(RepeatCommand ast, Object o) {
+    // Primero, visitar el cuerpo del ciclo
+    ast.C.visit(this, null);
+    
+    // Luego, verificar el tipo de la expresión de condición
+    TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+    if (eType == null) {
+        return null; // Devuelve null si no hay un tipo válido para la expresión
+    }
+    
+    // Verificar si la condición es de tipo booleano
+    if (!eType.equals(StdEnvironment.booleanType)) {
+        reporter.reportError("Boolean expression expected here", "", ast.E.position);
+    }
+    return null;
+}
+
+
   public Object visitSequentialCommand(SequentialCommand ast, Object o) {
     ast.C1.visit(this, null);
     ast.C2.visit(this, null);

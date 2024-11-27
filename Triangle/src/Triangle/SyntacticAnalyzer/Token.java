@@ -92,6 +92,12 @@ final class Token extends Object {
     WHILE		= 23,
     CASE        = 38,      // add
 
+    //REPEAT-JOSEPH
+
+    REPEAT = 39,  // Añadir
+    UNTIL = 40,   // Añadir
+
+
     // punctuation...
     DOT			= 24,
     COLON		= 25,
@@ -151,10 +157,12 @@ final class Token extends Object {
     "}",
     "",
     "<error>",
+    "repeat",  // Añadir
+    "until",   // Añadir
     "case"
   };
 
   private final static int	firstReservedWord = Token.ARRAY,
-                  lastReservedWord  = Token.WHILE;
+                  lastReservedWord  = Token.UNTIL;
 
 }

@@ -26,6 +26,7 @@ public interface Visitor {
   public abstract Object visitWhileCommand(WhileCommand ast, Object o);
   public abstract Object visitForCommand(ForCommand ast, Object o);
   public abstract Object visitCaseCommand(CaseCommand caseCommand, Object o);
+  public abstract Object visitRepeatCommand(RepeatCommand ast, Object o); // Añadir este método
 
   // Expressions
   public abstract Object visitArrayExpression(ArrayExpression ast, Object o);

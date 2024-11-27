@@ -1,0 +1,7 @@
+let
+    var n: Integer
+in
+    n := 5;
+    repeat
+    until n < 0
+end

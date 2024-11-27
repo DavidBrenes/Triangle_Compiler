@@ -99,10 +99,34 @@ public final class Scanner {
     case 'P':  case 'Q':  case 'R':  case 'S':  case 'T':
     case 'U':  case 'V':  case 'W':  case 'X':  case 'Y':
     case 'Z':
+
+
+      
       takeIt();
+
       while (isLetter(currentChar) || isDigit(currentChar))
         takeIt();
-      return Token.IDENTIFIER;
+
+      String spelling = currentSpelling.toString();
+      if (spelling.equals("repeat")) {
+          return Token.REPEAT;
+
+      } else if (spelling.equals("until")) {
+
+          return Token.UNTIL;
+      } else {
+          return Token.IDENTIFIER;
+      }
+
+ 
+      
+
+
+
+
+
+
+
 
     case '0':  case '1':  case '2':  case '3':  case '4':
     case '5':  case '6':  case '7':  case '8':  case '9':

@@ -1,0 +1,9 @@
+let
+    var x: Integer
+in
+    x := 0;
+    repeat
+        putint(x);
+        x := x + 2
+    until x > 6
+end
