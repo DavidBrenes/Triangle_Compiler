@@ -645,6 +645,26 @@ public final class Checker implements Visitor {
     return ast;
   }
 
+  /**
+   * @param ast
+   * @param o
+   * @return
+   */
+  @Override
+  public Object visitProcedureFieldTypeDenoter(ProcedureFieldTypeDenoter ast, Object o) {
+    return null;
+  }
+
+  /**
+   * @param ast
+   * @param o
+   * @return
+   */
+  @Override
+  public Object visitFunctionFieldTypeDenoter(FunctionFieldTypeDenoter ast, Object o) {
+    return null;
+  }
+
   public Object visitMultipleFieldTypeDenoter(MultipleFieldTypeDenoter ast, Object o) {
     ast.T = (TypeDenoter) ast.T.visit(this, null);
     ast.FT.visit(this, null);

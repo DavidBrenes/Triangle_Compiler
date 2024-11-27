@@ -267,6 +267,26 @@ public class LayoutVisitor implements Visitor {
     return layoutUnary("Rec.TypeD.", ast.FT);
   }
 
+  /**
+   * @param ast
+   * @param o
+   * @return
+   */
+  @Override
+  public Object visitProcedureFieldTypeDenoter(ProcedureFieldTypeDenoter ast, Object o) {
+    return null;
+  }
+
+  /**
+   * @param ast
+   * @param o
+   * @return
+   */
+  @Override
+  public Object visitFunctionFieldTypeDenoter(FunctionFieldTypeDenoter ast, Object o) {
+    return null;
+  }
+
 
   public Object visitMultipleFieldTypeDenoter(MultipleFieldTypeDenoter ast, Object obj) {
     return layoutTernary("Mult.F.TypeD.", ast.I, ast.T, ast.FT);

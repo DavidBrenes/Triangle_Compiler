@@ -89,6 +89,10 @@ public interface Visitor {
   public abstract Object visitIntTypeDenoter(IntTypeDenoter ast, Object o);
   public abstract Object visitRecordTypeDenoter(RecordTypeDenoter ast, Object o);
 
+  public abstract Object visitProcedureFieldTypeDenoter(ProcedureFieldTypeDenoter ast, Object o);
+  public abstract Object visitFunctionFieldTypeDenoter(FunctionFieldTypeDenoter ast, Object o);
+
+
   public abstract Object visitMultipleFieldTypeDenoter(MultipleFieldTypeDenoter ast, Object o);
   public abstract Object visitSingleFieldTypeDenoter(SingleFieldTypeDenoter ast, Object o);
 
@@ -105,5 +109,6 @@ public interface Visitor {
 
   // Programs
   public abstract Object visitProgram(Program ast, Object o);
+
 
 }

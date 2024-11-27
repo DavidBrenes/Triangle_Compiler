@@ -373,6 +373,8 @@ public class Parser {
       break;
 
     default:
+      System.out.println(currentToken.toString());
+
       syntacticError("\"%\" cannot start a command",
         currentToken.spelling);
       break;
@@ -394,7 +396,7 @@ public class Parser {
     SourcePosition expressionPos = new SourcePosition();
 
     start (expressionPos);
-   //System.out.println(currentToken.toString());
+   System.out.println(currentToken.toString());
 
 
     switch (currentToken.kind) {
@@ -736,6 +738,7 @@ public class Parser {
       break;
 
     default:
+      System.out.println(currentToken.toString());
       syntacticError("\"%\" cannot start a declaration",
         currentToken.spelling);
       break;

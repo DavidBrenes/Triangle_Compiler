@@ -18,23 +18,35 @@ import Triangle.SyntacticAnalyzer.SourcePosition;
 
 public class RecordTypeDenoter extends TypeDenoter {
 
-  public RecordTypeDenoter (FieldTypeDenoter ftAST, SourcePosition thePosition) {
-    super (thePosition);
+  public RecordTypeDenoter(FieldTypeDenoter ftAST, SourcePosition thePosition) {
+    super(thePosition);
     FT = ftAST;
   }
 
-  public Object visit (Visitor v, Object o) {
+  @Override
+  public Object visit(Visitor v, Object o) {
     return v.visitRecordTypeDenoter(this, o);
   }
 
-  public boolean equals (Object obj) {
-    if (obj != null && obj instanceof ErrorTypeDenoter)
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof ErrorTypeDenoter) {
       return true;
-    else if (obj != null && obj instanceof RecordTypeDenoter)
+    } else if (obj instanceof RecordTypeDenoter) {
       return this.FT.equals(((RecordTypeDenoter) obj).FT);
-    else
+    } else {
       return false;
+    }
   }
 
+  @Override
+  public void display(int indent) {
+    super.display(indent);
+    if (FT != null) {
+      FT.display(indent + 1);
+    }
+  }
+
+  // Campo que representa los tipos en el registro
   public FieldTypeDenoter FT;
 }
