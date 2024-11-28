@@ -196,13 +196,6 @@ public class LayoutVisitor implements Visitor {
     return layoutBinary("ConstF.P.", ast.I, ast.T);
   }
 
-
-  @Override
-  public Object visitDoWhileCommand(DoWhileCommand ast, Object obj) {
-      return layoutBinary("DoWhileCom.", ast.C, ast.E);
-  }
-
-
   public Object visitFuncFormalParameter(FuncFormalParameter ast, Object obj) {
     return layoutTernary("FuncF.P.", ast.I, ast.FPS, ast.T);
   }

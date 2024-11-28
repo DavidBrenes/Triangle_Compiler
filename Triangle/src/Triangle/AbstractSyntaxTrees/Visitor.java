@@ -85,9 +85,6 @@ public interface Visitor {
   public abstract Object visitMultipleActualParameterSequence(MultipleActualParameterSequence ast, Object o);
   public abstract Object visitSingleActualParameterSequence(SingleActualParameterSequence ast, Object o);
 
-
-  public Object visitDoWhileCommand(DoWhileCommand ast, Object o);
-
   // Type Denoters
   public abstract Object visitAnyTypeDenoter(AnyTypeDenoter ast, Object o);
   public abstract Object visitArrayTypeDenoter(ArrayTypeDenoter ast, Object o);

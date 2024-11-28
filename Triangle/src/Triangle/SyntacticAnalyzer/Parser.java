@@ -18,8 +18,6 @@ import java.util.LinkedHashMap;
 
 import Triangle.ErrorReporter;
 import Triangle.AbstractSyntaxTrees.*;
-import Triangle.AbstractSyntaxTrees.DoWhileCommand;
-
 
 public class Parser {
 
@@ -253,27 +251,17 @@ public class Parser {
       break;
 
     
-    case Token.REPEAT:
-    {
-        acceptIt(); // Consume el token `repeat`.
-        Command cAST = parseSingleCommand(); // Parsear el cuerpo del bucle.
-        accept(Token.UNTIL); // Asegúrate de que `until` siga al cuerpo del bucle.
-        Expression eAST = parseExpression(); // Parsear la condición.
-        accept(Token.END); // Asegúrate de que el bucle termine con `end`.
-        finish(commandPos); // Marca la posición final del comando.
-        commandAST = new RepeatCommand(cAST, eAST, commandPos); // Crea el nodo AST para `RepeatCommand`.
-    }
-    break;
-
-    case Token.DO: {
-      acceptIt(); // Consume el token `do`.
-      Command cAST = parseSingleCommand(); // Parsear el cuerpo del bucle.
-      accept(Token.WHILE); // Asegúrate de que `while` siga al cuerpo del bucle.
-      Expression eAST = parseExpression(); // Parsear la condición.
-      finish(commandPos); // Marca la posición final del comando.
-      commandAST = new DoWhileCommand(cAST, eAST, commandPos); // Crea el nodo AST para `DoWhileCommand`.
-      }
-        break;    
+case Token.REPEAT:
+{
+    acceptIt(); // Consume el token `repeat`.
+    Command cAST = parseSingleCommand(); // Parsear el cuerpo del bucle.
+    accept(Token.UNTIL); // Asegúrate de que `until` siga al cuerpo del bucle.
+    Expression eAST = parseExpression(); // Parsear la condición.
+    accept(Token.END); // Asegúrate de que el bucle termine con `end`.
+    finish(commandPos); // Marca la posición final del comando.
+    commandAST = new RepeatCommand(cAST, eAST, commandPos); // Crea el nodo AST para `RepeatCommand`.
+}
+break;
 
 
     case Token.BEGIN:
@@ -331,8 +319,6 @@ public class Parser {
         commandAST = new ForCommand(vAST, e1AST, e2AST, cAST, commandPos);
       }
       break;
-
-      
 /*
     case Token.CASE:
       {
@@ -950,9 +936,6 @@ public class Parser {
         actualAST = new VarActualParameter(vAST, actualPos);
       }
       break;
-
-
-
 
     case Token.PROC:
       {
