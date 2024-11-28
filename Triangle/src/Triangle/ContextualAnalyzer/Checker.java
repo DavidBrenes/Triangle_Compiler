@@ -412,6 +412,18 @@ public final class Checker implements Visitor {
     return elemType;
   }
 
+  @Override
+  public Object visitDoWhileCommand(DoWhileCommand ast, Object o) {
+      ast.C.visit(this, null); // Verificar el cuerpo del bucle
+      TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null); // Verificar el tipo de la expresión
+      if (!eType.equals(StdEnvironment.booleanType)) {
+          reporter.reportError("Boolean expression expected here", "", ast.E.position);
+      }
+      return null;
+  }
+
+
+
   // Record Aggregates
 
   // Returns the TypeDenoter for the Record Aggregate. Does not use the

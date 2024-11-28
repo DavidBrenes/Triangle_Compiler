@@ -28,6 +28,8 @@ final class Token extends Object {
 
     if (spelling.equals("repeat")) kind = Token.REPEAT;
     if (spelling.equals("until")) kind = Token.UNTIL;
+    if (spelling.equals("do")) kind = Token.DO;           // Añadir
+    if (spelling.equals("while")) kind = Token.WHILE;     // Añadir
 
 
 
@@ -103,6 +105,7 @@ final class Token extends Object {
 
     REPEAT = 39,  // Añadir
     UNTIL = 40,   // Añadir
+    
 
 
     // punctuation...
@@ -133,7 +136,6 @@ final class Token extends Object {
     "array",
     "begin",
     "const",
-    "do",
     "else",
     "end",
 	"for",          //add
@@ -149,7 +151,6 @@ final class Token extends Object {
 	"to",          //add
     "type",
     "var",
-    "while",
     ".",
     ":",
     ";",
@@ -166,10 +167,13 @@ final class Token extends Object {
     "<error>",
     "repeat",  // Añadir
     "until",   // Añadir
-    "case"
+    "case" ,
+    "do",      
+    "while" 
+
   };
 
   private final static int	firstReservedWord = Token.ARRAY,
-                  lastReservedWord  = Token.UNTIL;
+                  lastReservedWord  = Token.WHILE;
 
 }

@@ -945,6 +945,20 @@ public final class Encoder implements Visitor {
       // since the character literal is of the form 'x'}
   }
 
+    @Override
+  public Object visitDoWhileCommand(DoWhileCommand ast, Object o) {
+      int startLabel = nextLabel();
+      emitLabel(startLabel); // Marca el inicio del bucle
+
+      ast.C.visit(this, o); // Genera código para el cuerpo del bucle
+
+      ast.E.visit(this, o); // Genera código para la condición
+      emit(Machine.JUMPIFop, 1, Machine.CBr, startLabel); // Salta al inicio si la condición es verdadera
+
+      return null;
+  }
+
+
   // REGISTERS
 
   // Returns the register number appropriate for object code at currentLevel
