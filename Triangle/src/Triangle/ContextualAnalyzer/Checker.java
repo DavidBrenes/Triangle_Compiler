@@ -415,6 +415,55 @@ public final class Checker implements Visitor {
     return ast.type;
   }
 
+  @Override
+  public Object visitRecordDeclaration(RecordTypeDeclaration ast, Object o) {
+    IdentificationTable idTable = (IdentificationTable) o; // Tabla de identificadores
+    int recordSize = 0; // Tamaño del registro (opcional, dependiendo de tu implementación)
+
+    // Procesar todos los campos del registro
+    FieldTypeDenoter currentField = ast.fields;
+
+    while (currentField != null) {
+      // Verificar si el campo es un campo único
+      if (currentField instanceof SingleFieldTypeDenoter) {
+        SingleFieldTypeDenoter field = (SingleFieldTypeDenoter) currentField;
+
+        // Verificar que el campo no esté duplicado
+        if (idTable.retrieve(field.I.spelling) != null) {
+          reporter.reportError("Duplicate field \"%\" in record", field.I.spelling, field.I.position);
+        } else {
+          idTable.enter(field.I.spelling, field); // Registrar el campo en la tabla de símbolos
+        }
+
+        // Validar el tipo del campo (visitar el tipo)
+        field.T.visit(this, o); // Realizar la validación del tipo
+        recordSize += field.T.size(); // Sumar el tamaño del campo (si es necesario)
+
+        currentField = null; // No hay más campos en este caso
+      }
+      // Si el campo es una lista recursiva de campos (MultipleFieldTypeDenoter)
+      else if (currentField instanceof MultipleFieldTypeDenoter) {
+        MultipleFieldTypeDenoter multiField = (MultipleFieldTypeDenoter) currentField;
+
+        // Verificar el campo actual
+        if (idTable.retrieve(multiField.I.spelling) != null) {
+          reporter.reportError("Duplicate field \"%\" in record", multiField.I.spelling, multiField.I.position);
+        } else {
+          idTable.enter(multiField.I.spelling, multiField); // Registrar el campo en la tabla de símbolos
+        }
+
+        // Validar el tipo de campo
+        multiField.T.visit(this, o); // Realizar la validación del tipo
+        recordSize += multiField.T.size(); // Sumar el tamaño del campo (si es necesario)
+
+        // Avanzar al siguiente campo
+        currentField = multiField.FT; // Recursión implícita para el siguiente campo
+      }
+    }
+
+    return Integer.valueOf(recordSize); // Devolver el tamaño total del registro
+  }
+
   // Formal Parameters
 
   // Always returns null. Does not use the given object.

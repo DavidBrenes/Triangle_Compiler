@@ -19,8 +19,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import javax.swing.text.TableView.TableRow;
-
 import TAM.Instruction;
 import TAM.Machine;
 import Triangle.AbstractSyntaxTrees.*;
@@ -452,6 +450,34 @@ public final class Encoder implements Visitor {
   public Object visitSingleRecordAggregate(SingleRecordAggregate ast,
                        Object o) {
     return ast.E.visit(this, o);
+  }
+
+
+  @Override
+  public Object visitRecordDeclaration(RecordTypeDeclaration ast, Object o) {
+    Frame frame = (Frame) o;
+    int recordSize = 0;
+
+    FieldTypeDenoter currentField = ast.fields; // Nodo raíz de los campos
+    while (currentField != null) {
+      if (currentField instanceof SingleFieldTypeDenoter) {
+        SingleFieldTypeDenoter field = (SingleFieldTypeDenoter) currentField;
+
+        // Procesa el campo actual (inicializa y calcula tamaño)
+        recordSize += ((Integer) field.T.visit(this, frame)).intValue();
+        currentField = null; // Fin de la lista
+      } else if (currentField instanceof MultipleFieldTypeDenoter) {
+        MultipleFieldTypeDenoter multiField = (MultipleFieldTypeDenoter) currentField;
+
+        // Procesa el primer campo
+        recordSize += ((Integer) multiField.T.visit(this, frame)).intValue();
+
+        // Mover al siguiente campo (recursión implícita)
+        currentField = multiField.FT;
+      }
+    }
+
+    return Integer.valueOf(recordSize);
   }
 
 
