@@ -396,7 +396,7 @@ public class Parser {
     SourcePosition expressionPos = new SourcePosition();
 
     start (expressionPos);
-   System.out.println(currentToken.toString());
+   //(currentToken.toString());
 
 
     switch (currentToken.kind) {
