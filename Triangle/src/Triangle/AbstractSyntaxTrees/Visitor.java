@@ -12,7 +12,12 @@
  * of the authors.
  */
 
+
 package Triangle.AbstractSyntaxTrees;
+
+
+import Triangle.AbstractSyntaxTrees.RepeatCommand;
+
 
 public interface Visitor {
 

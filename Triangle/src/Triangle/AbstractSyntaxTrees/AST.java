@@ -30,6 +30,15 @@ public abstract class AST {
 
   public abstract Object visit(Visitor v, Object o);
 
-  public SourcePosition	position;
-  public RuntimeEntity  entity;
+  // Añadir este método
+  public void display(int indent) {
+    // Implementación básica: simplemente imprime la clase con una indentación
+    for (int i = 0; i < indent; i++) {
+      System.out.print("  ");
+    }
+    System.out.println(this.getClass().getSimpleName());
+  }
+
+  public SourcePosition position;
+  public RuntimeEntity entity;
 }

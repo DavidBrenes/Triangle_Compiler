@@ -24,6 +24,13 @@ final class Token extends Object {
   public Token(int kind, String spelling, SourcePosition position) {
 
     if (spelling.equals("case")) kind = Token.CASE;
+
+
+    if (spelling.equals("repeat")) kind = Token.REPEAT;
+    if (spelling.equals("until")) kind = Token.UNTIL;
+
+
+
     if (kind == Token.IDENTIFIER) {
       int currentKind = firstReservedWord;
       boolean searching = true;

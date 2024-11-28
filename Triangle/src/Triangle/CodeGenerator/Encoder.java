@@ -11,7 +11,6 @@
  * not be used for commercial purposes without the prior written permission
  * of the authors.
  */
-import Triangle.AbstractSyntaxTrees.RepeatCommand;
 
 package Triangle.CodeGenerator;
 
@@ -19,6 +18,7 @@ import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import Triangle.AbstractSyntaxTrees.RepeatCommand;
 
 import javax.swing.text.TableView.TableRow;
 
@@ -108,7 +108,7 @@ public final class Encoder implements Visitor {
       loopAddr = nextInstrAddr;
       ast.C.visit(this, frame);
       ast.E.visit(this, frame);
-      emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, loopAddr, ast.getPosition().start);
+      emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, loopAddr);
       return null;
   }
 

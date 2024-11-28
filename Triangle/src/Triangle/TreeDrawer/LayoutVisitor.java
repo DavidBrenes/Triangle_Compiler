@@ -62,11 +62,25 @@ public class LayoutVisitor implements Visitor {
     return layoutQuaternary("ForCom.", ast.V, ast.E1, ast.E2, ast.C);
   }
 
-  public Object visitCaseCommand(CaseCommand caseCommand, Object o) {
-    // TODO Auto-generated method stub
-    System.out.println("visitCaseCommand FUNCTION WAS CALLED IN LAYOUT VISITOR");
-    return null;
-}
+  public Object visitCaseCommand(CaseCommand ast, Object obj) {
+      System.out.println("visitCaseCommand FUNCTION WAS CALLED IN LAYOUT VISITOR");
+      DrawingTree dt = layoutCaption("CaseCom.");
+
+      // El CaseCommand tiene un map de valores y comandos asociados.
+      DrawingTree vTree = (DrawingTree) ast.V.visit(this, null); // Variable evaluada en el case
+      dt.setChildren(new DrawingTree[] {vTree});
+      attachParent(dt, join(dt));
+
+      for (Terminal terminal : ast.MAP.keySet()) {
+          DrawingTree caseLabelTree = (DrawingTree) terminal.visit(this, null);
+          DrawingTree commandTree = (DrawingTree) ast.MAP.get(terminal).visit(this, null);
+          dt.addChildren(new DrawingTree[] {caseLabelTree, commandTree});
+          attachParent(dt, join(dt));
+      }
+
+      return dt;
+  }
+
 
   // Expressions
   public Object visitArrayExpression(ArrayExpression ast, Object obj) {
@@ -92,6 +106,11 @@ public class LayoutVisitor implements Visitor {
   public Object visitIfExpression(IfExpression ast, Object obj) {
     return layoutTernary("IfExpr.", ast.E1, ast.E2, ast.E3);
   }
+
+  public Object visitRepeatCommand(RepeatCommand ast, Object obj) {
+    return layoutBinary("RepeatCom.", ast.C, ast.E);
+  }
+
 
   public Object visitIntegerExpression(IntegerExpression ast, Object obj) {
     return layoutUnary("Int.Expr.", ast.IL);

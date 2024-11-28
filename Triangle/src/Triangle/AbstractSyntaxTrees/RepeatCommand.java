@@ -19,7 +19,7 @@ public class RepeatCommand extends Command {
 	  
 	  public void display(int indent) {
 		  super.display(indent);
-		  E.display(indent+1);
-		  C.display(indent+1);
+		  //E.display(indent+1);
+		  //C.display(indent+1);
 	  }
 }
