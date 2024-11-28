@@ -107,7 +107,7 @@ public final class Checker implements Visitor {
   }
 
   public Object visitCaseCommand(CaseCommand ast, Object o) {
-    System.out.println("visitCaseCommand FUNCTION WAS CALLED IN CHECKER");
+    //System.out.println("visitCaseCommand FUNCTION WAS CALLED IN CHECKER");
     idTable.openScope();
 
     // Check if V-name supports both integer and character types
@@ -268,7 +268,7 @@ public final class Checker implements Visitor {
   }
 
   public Object visitCaseExpression(CaseExpression ast, Object o) {
-    System.out.println("visitCaseExpression FUNCTION WAS CALLED IN CHECKER");
+    //System.out.println("visitCaseExpression FUNCTION WAS CALLED IN CHECKER");
     idTable.openScope();
 
     // Check if V-name supports both integer and character types

@@ -15,6 +15,10 @@
 package Triangle.TreeDrawer;
 
 import java.awt.FontMetrics;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import Triangle.AbstractSyntaxTrees.*;
 
@@ -62,11 +66,17 @@ public class LayoutVisitor implements Visitor {
     return layoutQuaternary("ForCom.", ast.V, ast.E1, ast.E2, ast.C);
   }
 
-  public Object visitCaseCommand(CaseCommand caseCommand, Object o) {
+//  public Object visitCaseCommand(CaseCommand caseCommand, Object o) {
+//    // TODO Auto-generated method stub
+//    System.out.println("visitCaseCommand FUNCTION WAS CALLED IN LAYOUT VISITOR");
+//    return null;
+//}
+
+  public Object visitCaseCommand(CaseCommand ast, Object o) {
     // TODO Auto-generated method stub
-    System.out.println("visitCaseCommand FUNCTION WAS CALLED IN LAYOUT VISITOR");
-    return null;
-}
+    //System.out.println("visitCaseCommand FUNCTION WAS CALLED IN LAYOUT VISITOR");
+    return layoutBinary_CaseCommand("CaseCom.",ast.V,ast.MAP);
+  }
 
   // Expressions
   public Object visitArrayExpression(ArrayExpression ast, Object obj) {
@@ -113,9 +123,14 @@ public class LayoutVisitor implements Visitor {
     return layoutUnary("VnameExpr.", ast.V);
   }
 
-  public Object visitCaseExpression(CaseExpression caseExpression, Object o) {
-    System.out.println("visitCaseExpression FUNCTION WAS CALLED IN LAYOUT VISITOR");
-    return null;
+//  public Object visitCaseExpression(CaseExpression caseExpression, Object o) {
+//    System.out.println("visitCaseExpression FUNCTION WAS CALLED IN LAYOUT VISITOR");
+//    return null;
+//  }
+
+  public Object visitCaseExpression(CaseExpression ast, Object o) {
+    //System.out.println("visitCaseExpression FUNCTION WAS CALLED IN LAYOUT VISITOR");
+    return layoutBinary_CaseExpression("CaseCom.",ast.V,ast.MAP);
   }
 
   // Declarations
@@ -344,6 +359,86 @@ public class LayoutVisitor implements Visitor {
     DrawingTree d2 = (DrawingTree) child2.visit(this, null);
     dt.setChildren(new DrawingTree[] {d1, d2});
     attachParent(dt, join(dt));
+    return dt;
+  }
+
+  private DrawingTree layoutBinary_CaseCommand(String name, AST child1, LinkedHashMap<Terminal, Command> child2) {
+    // Create a tree for the caption
+    DrawingTree dt = layoutCaption(name);
+
+    // Visit the first child and generate its tree
+    DrawingTree d1 = (DrawingTree) child1.visit(this, null);
+
+    // Create a list to hold all DrawingTrees generated from child2
+    List<DrawingTree> child2Trees = new ArrayList<>();
+
+    // Iterate over the LinkedHashMap and create a DrawingTree for each entry
+    for (Map.Entry<Terminal, Command> entry : child2.entrySet()) {
+      // Create DrawingTree for the key
+      DrawingTree keyTree = (DrawingTree) entry.getKey().visit(this, null);
+
+      // Create DrawingTree for the value
+      DrawingTree valueTree = (DrawingTree) entry.getValue().visit(this, null);
+
+      // Combine key and value into a single DrawingTree node
+      DrawingTree pairTree = layoutCaption("Pair");
+      pairTree.setChildren(new DrawingTree[] {keyTree, valueTree});
+
+      // Add the pair tree to the list
+      child2Trees.add(pairTree);
+    }
+
+    // Combine all child2 trees into a single DrawingTree
+    DrawingTree d2 = layoutCaption("Child2");
+    d2.setChildren(child2Trees.toArray(new DrawingTree[0]));
+
+    // Set the children for the main tree
+    dt.setChildren(new DrawingTree[] {d1, d2});
+
+    // Attach parent and adjust layout
+    attachParent(dt, join(dt));
+
+    return dt;
+  }
+
+
+
+  private DrawingTree layoutBinary_CaseExpression(String name, AST child1, LinkedHashMap<Terminal, Expression> child2) {
+    // Create a tree for the caption
+    DrawingTree dt = layoutCaption(name);
+
+    // Visit the first child and generate its tree
+    DrawingTree d1 = (DrawingTree) child1.visit(this, null);
+
+    // Create a list to hold all DrawingTrees generated from child2
+    List<DrawingTree> child2Trees = new ArrayList<>();
+
+    // Iterate over the LinkedHashMap and create a DrawingTree for each entry
+    for (Map.Entry<Terminal, Expression> entry : child2.entrySet()) {
+      // Create DrawingTree for the key
+      DrawingTree keyTree = (DrawingTree) entry.getKey().visit(this, null);
+
+      // Create DrawingTree for the value
+      DrawingTree valueTree = (DrawingTree) entry.getValue().visit(this, null);
+
+      // Combine key and value into a single DrawingTree node
+      DrawingTree pairTree = layoutCaption("Pair");
+      pairTree.setChildren(new DrawingTree[] {keyTree, valueTree});
+
+      // Add the pair tree to the list
+      child2Trees.add(pairTree);
+    }
+
+    // Combine all child2 trees into a single DrawingTree
+    DrawingTree d2 = layoutCaption("Child2");
+    d2.setChildren(child2Trees.toArray(new DrawingTree[0]));
+
+    // Set the children for the main tree
+    dt.setChildren(new DrawingTree[] {d1, d2});
+
+    // Attach parent and adjust layout
+    attachParent(dt, join(dt));
+
     return dt;
   }
 
