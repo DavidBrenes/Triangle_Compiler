@@ -288,21 +288,41 @@ public class Parser {
         commandAST = new WhileCommand(eAST, cAST, commandPos);
       }
       break;
-
-    case Token.FOR:
-      {
+      case Token.FOR: {
+        // Consumir 'for'
         acceptIt();
+    
+        // Parsear la variable de control y la asignación
         Vname vAST = parseVname();
-        accept(Token.FROM);
+        accept(Token.BECOMES);
         Expression e1AST = parseExpression();
+    
+        // Parsear el rango (to)
         accept(Token.TO);
         Expression e2AST = parseExpression();
+    
+        // Paso opcional (by)
+        IntegerLiteral stepAST = null;
+        if (currentToken.kind == Token.BY) {
+            acceptIt();
+            stepAST = parseIntegerLiteral();
+        }
+    
+        // Parsear el cuerpo (do ... comando)
         accept(Token.DO);
-        Command cAST = parseSingleCommand();
-        finish(commandPos);
-        commandAST = new ForCommand(vAST, e1AST, e2AST, cAST, commandPos);
-      }
-      break;
+        Command bodyAST = parseSingleCommand();
+    
+        // Terminar con 'end'
+        accept(Token.END); // Asegúrate de que este es el único consumo de 'end'.
+    
+        commandAST = new ForCommand(vAST, e1AST, e2AST, stepAST, bodyAST, commandPos);
+        break;
+    }
+    
+    
+    
+    
+    
 /*
     case Token.CASE:
       {

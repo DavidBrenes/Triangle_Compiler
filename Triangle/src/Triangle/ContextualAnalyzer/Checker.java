@@ -90,21 +90,34 @@ public final class Checker implements Visitor {
     return null;
   }
   
+  @Override
   public Object visitForCommand(ForCommand ast, Object o) {
-    TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);
-    if (! ast.V.variable)
-      reporter.reportError("identifier is not a variable", "", ast.V.position);
-    else if (! (vType instanceof IntTypeDenoter))
-      reporter.reportError("Integer expected here", "", ast.V.position);
-    TypeDenoter e1Type = (TypeDenoter) ast.E1.visit(this, null);
-    if (! e1Type.equals(vType))
-      reporter.reportError("wrong type for starting expression", "", ast.E1.position);
-    TypeDenoter e2Type = (TypeDenoter) ast.E2.visit(this, null);
-    if (! e2Type.equals(vType))
-      reporter.reportError("wrong type for ending expression", "", ast.E2.position);
-    ast.C.visit(this, null);
+    // Verificar que la variable sea asignable
+    TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);  // Verificar que V (la variable de control) tiene el tipo adecuado
+    if (!vType.equals(StdEnvironment.integerType)) {
+        reporter.reportError("Control variable of for must be of type int", "", ast.V.position);
+    }
+
+    // Verificar expresiones de inicio y fin
+    TypeDenoter e1Type = (TypeDenoter) ast.E1.visit(this, null);  // Verificar que la expresión de inicio es de tipo int
+    TypeDenoter e2Type = (TypeDenoter) ast.E2.visit(this, null);  // Verificar que la expresión de fin es de tipo int
+    if (!e1Type.equals(StdEnvironment.integerType) || !e2Type.equals(StdEnvironment.integerType)) {
+        reporter.reportError("Expressions in for range must be of type int", "", ast.position);
+    }
+
+    // Verificar paso si está definido
+    if (ast.step != null) {
+        TypeDenoter stepType = (TypeDenoter) ast.step.visit(this, null);  // Verificar que el paso (step) es de tipo int
+        if (!stepType.equals(StdEnvironment.integerType)) {
+            reporter.reportError("Step value in for must be of type int", "", ast.step.position);
+        }
+    }
+
+    // Verificar cuerpo del for
+    ast.body.visit(this, null);  // Verificar que el cuerpo del bucle (body) es un comando válido
     return null;
   }
+
 
   public Object visitCaseCommand(CaseCommand ast, Object o) {
     System.out.println("visitCaseCommand FUNCTION WAS CALLED IN CHECKER");

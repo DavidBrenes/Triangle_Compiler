@@ -14,9 +14,8 @@
 
 package Triangle.TreeDrawer;
 
-import java.awt.FontMetrics;
-
 import Triangle.AbstractSyntaxTrees.*;
+import java.awt.FontMetrics;
 
 public class LayoutVisitor implements Visitor {
 
@@ -58,9 +57,11 @@ public class LayoutVisitor implements Visitor {
     return layoutBinary("WhileCom.", ast.E, ast.C);
   }
   
+  @Override
   public Object visitForCommand(ForCommand ast, Object obj) {
-    return layoutQuaternary("ForCom.", ast.V, ast.E1, ast.E2, ast.C);
+      return layoutQuaternary("For", ast.V, ast.E1, ast.E2, ast.body);
   }
+  
 
   public Object visitCaseCommand(CaseCommand caseCommand, Object o) {
     // TODO Auto-generated method stub
