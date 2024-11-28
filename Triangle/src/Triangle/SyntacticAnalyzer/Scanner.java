@@ -109,11 +109,14 @@ public final class Scanner {
 
       String spelling = currentSpelling.toString();
       if (spelling.equals("repeat")) {
+
           return Token.REPEAT;
-
       } else if (spelling.equals("until")) {
-
           return Token.UNTIL;
+      } else if (spelling.equals("do")) {
+          return Token.DO;
+      } else if (spelling.equals("while")) {
+          return Token.WHILE;
       } else {
           return Token.IDENTIFIER;
       }
