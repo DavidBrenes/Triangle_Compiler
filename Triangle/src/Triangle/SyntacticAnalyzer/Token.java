@@ -29,6 +29,9 @@ final class Token extends Object {
     if (spelling.equals("repeat")) kind = Token.REPEAT;
     if (spelling.equals("until")) kind = Token.UNTIL;
 
+    if (spelling.equals("do")) kind = Token.DO;        // Añadir
+    if (spelling.equals("while")) kind = Token.WHILE;  // Añadir
+
 
 
     if (kind == Token.IDENTIFIER) {
@@ -83,8 +86,8 @@ final class Token extends Object {
     DO			= 7,
     ELSE		= 8,
     END			= 9,
-	FOR         = 10,     // add
-	FROM        = 11,     // add
+	FOR         = 10,     
+	FROM        = 11,     
     FUNC		= 12,
     IF			= 13,
     IN			= 14,
@@ -93,17 +96,19 @@ final class Token extends Object {
     PROC		= 17,
     RECORD		= 18,
     THEN		= 19,
-	TO          = 20,     // add
+	TO          = 20,    
     TYPE		= 21,
     VAR			= 22,
     WHILE		= 23,
-    CASE        = 38,      // add
+    CASE        = 38,     
 
     //REPEAT-JOSEPH
 
-    REPEAT = 39,  // Añadir
-    UNTIL = 40,   // Añadir
+    REPEAT = 39,  
+    UNTIL = 40,   
 
+
+    DO_WHILE = 41,
 
     // punctuation...
     DOT			= 24,
@@ -136,8 +141,8 @@ final class Token extends Object {
     "do",
     "else",
     "end",
-	"for",          //add
-	"from",         //add
+	"for",         
+	"from",        
     "func",
     "if",
     "in",

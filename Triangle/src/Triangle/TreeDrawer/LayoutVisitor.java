@@ -57,6 +57,8 @@ public class LayoutVisitor implements Visitor {
   public Object visitWhileCommand(WhileCommand ast, Object obj) {
     return layoutBinary("WhileCom.", ast.E, ast.C);
   }
+
+  
   
   public Object visitForCommand(ForCommand ast, Object obj) {
     return layoutQuaternary("ForCom.", ast.V, ast.E1, ast.E2, ast.C);
@@ -199,6 +201,13 @@ public class LayoutVisitor implements Visitor {
   public Object visitFuncFormalParameter(FuncFormalParameter ast, Object obj) {
     return layoutTernary("FuncF.P.", ast.I, ast.FPS, ast.T);
   }
+
+
+  public Object visitDoWhileCommand(DoWhileCommand ast, Object obj) {
+    // Crear el nodo de dibujo para el comando DoWhile
+    return layoutBinary("DoWhileCom.", ast.C, ast.E);
+  }
+
 
   public Object visitProcFormalParameter(ProcFormalParameter ast, Object obj) {
     return layoutBinary("ProcF.P.", ast.I, ast.FPS);

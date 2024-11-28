@@ -281,6 +281,17 @@ break;
       }
       break;
 
+    case Token.DO:
+      {
+        acceptIt();
+        Command doCommandAST = parseSingleCommand();
+        accept(Token.WHILE);
+        Expression whileExpressionAST = parseExpression();
+        finish(commandPos);
+        commandAST = new DoWhileCommand(doCommandAST, whileExpressionAST, commandPos);
+      }
+      break;
+      
     case Token.IF:
       {
         acceptIt();

@@ -1,0 +1,9 @@
+let
+  var i: Integer
+in
+  do
+    begin
+      i := 0;
+      putint(i)
+    end
+  while (i < 5)

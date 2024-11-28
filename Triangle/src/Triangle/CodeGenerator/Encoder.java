@@ -40,6 +40,27 @@ public final class Encoder implements Visitor {
     return null;
   }
 
+  public Object visitDoWhileCommand(DoWhileCommand ast, Object o) {
+      Frame frame = (Frame) o;
+      int loopAddr;
+
+      // Primero genera la dirección de inicio del ciclo
+      loopAddr = nextInstrAddr;
+
+      // Visitar el cuerpo del ciclo
+      ast.C.visit(this, frame);
+
+      // Evaluar la condición del ciclo
+      ast.E.visit(this, frame);
+
+      // Saltar al inicio del ciclo si la condición es verdadera
+      emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, loopAddr);
+
+      return null;
+  }
+
+
+
   public Object visitCallCommand(CallCommand ast, Object o) {
     Frame frame = (Frame) o;
     Integer argsSize = (Integer) ast.APS.visit(this, frame);

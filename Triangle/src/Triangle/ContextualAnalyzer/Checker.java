@@ -39,6 +39,22 @@ public final class Checker implements Visitor {
     return null;
   }
 
+  public Object visitDoWhileCommand(DoWhileCommand ast, Object o) {
+    // Visitar el cuerpo del bucle primero
+    ast.C.visit(this, null);
+    
+    // Luego, verificar el tipo de la expresión de condición
+    TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+    
+    // Verificar si la condición es de tipo booleano
+    if (!eType.equals(StdEnvironment.booleanType)) {
+        reporter.reportError("Boolean expression expected here", "", ast.E.position);
+    }
+    
+    return null;
+  }
+
+
 
   public Object visitCallCommand(CallCommand ast, Object o) {
 
