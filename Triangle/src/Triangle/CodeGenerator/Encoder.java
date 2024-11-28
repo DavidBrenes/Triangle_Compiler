@@ -11,6 +11,7 @@
  * not be used for commercial purposes without the prior written permission
  * of the authors.
  */
+import Triangle.AbstractSyntaxTrees.RepeatCommand;
 
 package Triangle.CodeGenerator;
 
@@ -100,6 +101,16 @@ public final class Encoder implements Visitor {
   }
 
 
+  public Object visitRepeatCommand(RepeatCommand ast, Object o) {
+      Frame frame = (Frame) o;
+      int loopAddr;
+
+      loopAddr = nextInstrAddr;
+      ast.C.visit(this, frame);
+      ast.E.visit(this, frame);
+      emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, loopAddr, ast.getPosition().start);
+      return null;
+  }
 
 
   public Object visitEmptyCommand(EmptyCommand ast, Object o) {
