@@ -148,7 +148,7 @@ public final class Checker implements Visitor {
 
   public Object visitArrayExpression(ArrayExpression ast, Object o) {
     TypeDenoter elemType = (TypeDenoter) ast.AA.visit(this, null);
-    IntegerLiteral il = new IntegerLiteral(new Integer(ast.AA.elemCount).toString(),
+    IntegerLiteral il = new IntegerLiteral(Integer.valueOf(ast.AA.elemCount).toString(),
                                            ast.position);
     ast.type = new ArrayTypeDenoter(il, elemType, ast.position);
     return ast.type;
@@ -413,6 +413,11 @@ public final class Checker implements Visitor {
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
     ast.type = new SingleFieldTypeDenoter(ast.I, eType, ast.position);
     return ast.type;
+  }
+
+  @Override
+  public Object visitRecordDeclaration(RecordDeclaration recordDeclaration, Object o) {
+    return null;
   }
 
   // Formal Parameters
