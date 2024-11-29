@@ -15,7 +15,7 @@
 package Triangle.ContextualAnalyzer;
 
 import Triangle.AbstractSyntaxTrees.Declaration;
-import Triangle.AbstractSyntaxTrees.FuncDeclaration;
+import Triangle.AbstractSyntaxTrees.TypeDeclaration;
 
 public final class IdentificationTable {
 
@@ -57,23 +57,25 @@ public final class IdentificationTable {
   // duplicated is set to to true iff there is already an entry for the
   // same identifier at the current level.
 
-  public void enter (String id, FuncDeclaration attr) {
+  public void enter (String id, Declaration attr) {
 
     IdEntry entry = this.latest;
     boolean present = false, searching = true;
 
     // Check for duplicate entry ...
     while (searching) {
-      if (entry == null || entry.level < this.level)
+      if (entry == null || entry.level < this.level) {
         searching = false;
-      else if (entry.id.equals(id)) {
+      } else if (entry.id.equals(id)) {
         present = true;
         searching = false;
-       } else
-       entry = entry.previous;
+      } else {
+        entry = entry.previous;
+      }
     }
 
     attr.duplicated = present;
+
     // Add new entry ...
     entry = new IdEntry(id, attr, this.level, this.latest);
     this.latest = entry;
@@ -89,21 +91,22 @@ public final class IdentificationTable {
 
     IdEntry entry;
     Declaration attr = null;
-    boolean present = false, searching = true;
+    boolean searching = true;
 
     entry = this.latest;
     while (searching) {
-      if (entry == null)
+      if (entry == null) {
         searching = false;
-      else if (entry.id.equals(id)) {
-        present = true;
+      } else if (entry.id.equals(id)) {
         searching = false;
         attr = entry.attr;
-      } else
+      } else {
         entry = entry.previous;
+      }
     }
 
     return attr;
+
   }
 
 }

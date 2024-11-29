@@ -2,7 +2,7 @@ package Triangle.AbstractSyntaxTrees;
 
 import Triangle.SyntacticAnalyzer.SourcePosition;
 
-public class RecordDeclaration extends Declaration {
+public class RecordDeclaration extends RecordTypeDeclaration {
 
     // Atributos
     public FieldTypeDenoter fields; // Representa los campos del registro

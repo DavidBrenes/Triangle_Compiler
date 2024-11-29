@@ -186,17 +186,6 @@ public class LayoutVisitor implements Visitor {
   }
 
 
-  /**
-   * @param recordDeclaration
-   * @param o
-   * @return
-   */
-  @Override
-  public Object visitRecordDeclaration(RecordDeclaration recordDeclaration, Object o) {
-    return null;
-  }
-
-
   // Formal Parameters
   public Object visitConstFormalParameter(ConstFormalParameter ast, Object obj) {
     return layoutBinary("ConstF.P.", ast.I, ast.T);

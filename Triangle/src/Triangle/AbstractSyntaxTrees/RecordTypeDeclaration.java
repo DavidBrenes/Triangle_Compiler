@@ -5,7 +5,7 @@ import Triangle.SyntacticAnalyzer.SourcePosition;
 public class RecordTypeDeclaration extends Declaration {
     public FieldTypeDenoter fields;
 
-    public RecordTypeDeclaration(FieldTypeDenoter fields, SourcePosition pos) {
+    public RecordTypeDeclaration(SourcePosition pos) {
         super(pos);
         this.fields = fields;
     }
