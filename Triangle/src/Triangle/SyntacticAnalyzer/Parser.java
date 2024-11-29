@@ -292,34 +292,36 @@ public class Parser {
         // Consumir 'for'
         acceptIt();
     
-        // Parsear la variable de control y la asignación
-        Vname vAST = parseVname();
-        accept(Token.BECOMES);
-        Expression e1AST = parseExpression();
+        // Parsear la variable de control y la asignación inicial
+        Vname vAST = parseVname(); // Parsear la variable de control
+        accept(Token.BECOMES);      // Consumir el token ':='
+        Expression e1AST = parseExpression(); // Parsear la expresión de inicio (E1)
     
         // Parsear el rango (to)
         accept(Token.TO);
-        Expression e2AST = parseExpression();
+        Expression e2AST = parseExpression(); // Parsear la expresión de fin (E2)
     
-        // Paso opcional (by)
-        IntegerLiteral stepAST = null;
-        if (currentToken.kind == Token.BY) {
-            acceptIt();
-            stepAST = parseIntegerLiteral();
+        // Parsear el paso opcional (by)
+        IntegerLiteral stepAST = null; // Inicializamos el paso como null
+        if (currentToken.kind == Token.BY) { // Si existe el token 'by'
+            acceptIt(); // Consumir el token 'by'
+            stepAST = parseIntegerLiteral(); // Parsear el literal de paso
         }
     
-        // Parsear el cuerpo (do ... comando)
-        accept(Token.DO);
-        Command bodyAST = parseSingleCommand();
+        // Parsear el cuerpo del bucle (do ... comando)
+        accept(Token.DO); // Verificar y consumir el token 'do'
+        Command bodyAST = parseSingleCommand(); // Parsear el cuerpo del bucle
+        
+        // Aceptar el 'end' que termina el for
+        accept(Token.END); // Verificar y consumir el token 'end'
     
-        // Terminar con 'end'
-        accept(Token.END); // Asegúrate de que este es el único consumo de 'end'.
-    
+        // Crear el nodo AST para el comando `for`
         commandAST = new ForCommand(vAST, e1AST, e2AST, stepAST, bodyAST, commandPos);
         break;
     }
     
     
+ 
     
     
     

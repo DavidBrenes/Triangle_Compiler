@@ -92,31 +92,32 @@ public final class Checker implements Visitor {
   
   @Override
   public Object visitForCommand(ForCommand ast, Object o) {
-    // Verificar que la variable sea asignable
-    TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);  // Verificar que V (la variable de control) tiene el tipo adecuado
+    // Verificar que la variable de control sea de tipo entero
+    TypeDenoter vType = (TypeDenoter) ast.controlVar.visit(this, null);
     if (!vType.equals(StdEnvironment.integerType)) {
-        reporter.reportError("Control variable of for must be of type int", "", ast.V.position);
+        reporter.reportError("Control variable of for must be of type int", "", ast.controlVar.position);
     }
 
-    // Verificar expresiones de inicio y fin
-    TypeDenoter e1Type = (TypeDenoter) ast.E1.visit(this, null);  // Verificar que la expresión de inicio es de tipo int
-    TypeDenoter e2Type = (TypeDenoter) ast.E2.visit(this, null);  // Verificar que la expresión de fin es de tipo int
+    // Verificar que las expresiones de inicio y fin sean de tipo entero
+    TypeDenoter e1Type = (TypeDenoter) ast.startExp.visit(this, null);
+    TypeDenoter e2Type = (TypeDenoter) ast.endExp.visit(this, null);
     if (!e1Type.equals(StdEnvironment.integerType) || !e2Type.equals(StdEnvironment.integerType)) {
         reporter.reportError("Expressions in for range must be of type int", "", ast.position);
     }
 
-    // Verificar paso si está definido
+    // Verificar el paso (step), si está definido
     if (ast.step != null) {
-        TypeDenoter stepType = (TypeDenoter) ast.step.visit(this, null);  // Verificar que el paso (step) es de tipo int
+        TypeDenoter stepType = (TypeDenoter) ast.step.visit(this, null);
         if (!stepType.equals(StdEnvironment.integerType)) {
             reporter.reportError("Step value in for must be of type int", "", ast.step.position);
         }
     }
 
-    // Verificar cuerpo del for
-    ast.body.visit(this, null);  // Verificar que el cuerpo del bucle (body) es un comando válido
+    // Verificar el cuerpo del bucle (comando)
+    ast.command.visit(this, null);
+
     return null;
-  }
+    }
 
 
   public Object visitCaseCommand(CaseCommand ast, Object o) {

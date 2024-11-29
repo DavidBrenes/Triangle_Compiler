@@ -151,43 +151,43 @@ public final class Encoder implements Visitor {
     return null;
   }
   
-  public Object visitForCommand(ForCommand ast, Object o) { 
+  public Object visitForCommand(ForCommand ast, Object o) {
     Frame frame = (Frame) o;
     int jumpAddr, loopAddr;
 
-    // Evaluar la expresión inicial (E1) y almacenarla en la variable de control (V)
-    ast.E1.visit(this, frame); // Evalúa la expresión de inicio
-    encodeStore(ast.V, frame, 1); // Almacena el valor de E1 en la variable de control V
+    // Evaluar la expresión de inicio (E1) y almacenarla en la variable de control (V)
+    ast.startExp.visit(this, frame);  // Evaluar la expresión de inicio
+    encodeStore(ast.controlVar, frame, 1);  // Almacenar el valor de E1 en la variable de control
 
-    // Genera el salto condicional al principio del bucle
-    jumpAddr = nextInstrAddr; // Dirección del salto condicional
-    emit(Machine.JUMPop, 0, Machine.CBr, 0); // Salto condicional: si la condición no se cumple, salta fuera del bucle
+    // Generar el salto condicional al principio del bucle
+    jumpAddr = nextInstrAddr;  // Dirección del salto condicional
+    emit(Machine.JUMPop, 0, Machine.CBr, 0); // Salto condicional
 
     // Dirección de la etiqueta de inicio del bucle
-    loopAddr = nextInstrAddr; // Dirección de inicio del bucle
+    loopAddr = nextInstrAddr;
 
-    // Verificar si body es null o no antes de intentar visitarlo
-    if (ast.body != null) {
-        ast.body.visit(this, frame); // Ejecuta el cuerpo del bucle (verificar que ast.body es un Command)
+    // Verificar si el cuerpo del bucle es nulo o no antes de intentar visitarlo
+    if (ast.command != null) {
+        ast.command.visit(this, frame);  // Ejecutar el cuerpo del bucle
     } else {
-        // Si body es null, se reporta un error o se toma alguna acción.
         reporter.reportError("Body of 'for' loop cannot be null", "", ast.position);
     }
 
     // Incrementar la variable de control (V)
-    encodeFetch(ast.V, frame, 1); // Cargar el valor de la variable de control V
+    encodeFetch(ast.controlVar, frame, 1);  // Cargar el valor de la variable de control
     emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.succDisplacement); // Incrementar la variable de control
-    encodeStore(ast.V, frame, 1); // Guardar el nuevo valor de V
+    encodeStore(ast.controlVar, frame, 1);  // Guardar el nuevo valor de la variable de control
 
-    // Volver a verificar la condición del bucle (E2)
-    patch(jumpAddr, nextInstrAddr); // Actualizar la dirección del salto si la condición no se cumple
-    encodeFetch(ast.V, frame, 1); // Cargar nuevamente la variable de control
-    ast.E2.visit(this, frame); // Evaluar la expresión de fin (E2)
-    emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.leDisplacement); // Comparar si V <= E2
-    emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, loopAddr); // Si V <= E2, volver al inicio del bucle
+    // Verificar la condición de fin (E2)
+    patch(jumpAddr, nextInstrAddr);  // Actualizar el salto condicional
+    encodeFetch(ast.controlVar, frame, 1);  // Cargar nuevamente la variable de control
+    ast.endExp.visit(this, frame);  // Evaluar la expresión de fin
+    emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.leDisplacement);  // Comparar si V <= E2
+    emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, loopAddr);  // Si V <= E2, saltar al inicio del bucle
 
     return null;
 }
+
 
 
 

@@ -59,8 +59,9 @@ public class LayoutVisitor implements Visitor {
   
   @Override
   public Object visitForCommand(ForCommand ast, Object obj) {
-      return layoutQuaternary("For", ast.V, ast.E1, ast.E2, ast.body);
-  }
+    // Llamada a la función auxiliar para el formato del comando "for"
+    return layoutQuaternary("For", ast.controlVar, ast.startExp, ast.endExp, ast.command);
+}
   
 
   public Object visitCaseCommand(CaseCommand caseCommand, Object o) {
