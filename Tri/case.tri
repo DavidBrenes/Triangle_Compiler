@@ -1,11 +1,5 @@
-let
-    var age : Integer
-in
-    begin
-        age := 20;
-        case age of
-            20 : putint(age+1)
-            25 : putint(age+5)
-            30 : putint(age+10)
-        end;
-    end
+record
+      x : integer;
+      y : integer;
+      norm : func () ~ x*x + y*y
+ end

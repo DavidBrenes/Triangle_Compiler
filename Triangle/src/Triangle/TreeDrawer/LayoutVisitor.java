@@ -175,6 +175,17 @@ public class LayoutVisitor implements Visitor {
     return layoutBinary("Sing.Rec.Agg.", ast.I, ast.E);
   }
 
+  @Override
+  public Object visitRecordDeclaration(RecordTypeDeclaration ast, Object obj) {
+    DrawingTree dt = layoutCaption("RecordDecl.");
+    DrawingTree fieldsTree = (DrawingTree) ast.fields.visit(this, null);
+    dt.setChildren(new DrawingTree[] {fieldsTree});
+    attachParent(dt, join(dt));
+
+    return dt;
+  }
+
+
   /**
    * @param recordDeclaration
    * @param o

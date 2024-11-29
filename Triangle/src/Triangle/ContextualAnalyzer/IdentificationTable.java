@@ -15,7 +15,7 @@
 package Triangle.ContextualAnalyzer;
 
 import Triangle.AbstractSyntaxTrees.Declaration;
-import Triangle.AbstractSyntaxTrees.SingleFieldTypeDenoter;
+import Triangle.AbstractSyntaxTrees.FuncDeclaration;
 
 public final class IdentificationTable {
 
@@ -57,7 +57,7 @@ public final class IdentificationTable {
   // duplicated is set to to true iff there is already an entry for the
   // same identifier at the current level.
 
-  public void enter (String id, SingleFieldTypeDenoter attr) {
+  public void enter (String id, FuncDeclaration attr) {
 
     IdEntry entry = this.latest;
     boolean present = false, searching = true;
