@@ -90,21 +90,35 @@ public final class Checker implements Visitor {
     return null;
   }
   
+  @Override
   public Object visitForCommand(ForCommand ast, Object o) {
-    TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);
-    if (! ast.V.variable)
-      reporter.reportError("identifier is not a variable", "", ast.V.position);
-    else if (! (vType instanceof IntTypeDenoter))
-      reporter.reportError("Integer expected here", "", ast.V.position);
-    TypeDenoter e1Type = (TypeDenoter) ast.E1.visit(this, null);
-    if (! e1Type.equals(vType))
-      reporter.reportError("wrong type for starting expression", "", ast.E1.position);
-    TypeDenoter e2Type = (TypeDenoter) ast.E2.visit(this, null);
-    if (! e2Type.equals(vType))
-      reporter.reportError("wrong type for ending expression", "", ast.E2.position);
-    ast.C.visit(this, null);
+    // Verificar que la variable de control sea de tipo entero
+    TypeDenoter vType = (TypeDenoter) ast.controlVar.visit(this, null);
+    if (!vType.equals(StdEnvironment.integerType)) {
+        reporter.reportError("Control variable of for must be of type int", "", ast.controlVar.position);
+    }
+
+    // Verificar que las expresiones de inicio y fin sean de tipo entero
+    TypeDenoter e1Type = (TypeDenoter) ast.startExp.visit(this, null);
+    TypeDenoter e2Type = (TypeDenoter) ast.endExp.visit(this, null);
+    if (!e1Type.equals(StdEnvironment.integerType) || !e2Type.equals(StdEnvironment.integerType)) {
+        reporter.reportError("Expressions in for range must be of type int", "", ast.position);
+    }
+
+    // Verificar el paso (step), si está definido
+    if (ast.step != null) {
+        TypeDenoter stepType = (TypeDenoter) ast.step.visit(this, null);
+        if (!stepType.equals(StdEnvironment.integerType)) {
+            reporter.reportError("Step value in for must be of type int", "", ast.step.position);
+        }
+    }
+
+    // Verificar el cuerpo del bucle (comando)
+    ast.command.visit(this, null);
+
     return null;
-  }
+    }
+
 
   public Object visitCaseCommand(CaseCommand ast, Object o) {
     //System.out.println("visitCaseCommand FUNCTION WAS CALLED IN CHECKER");

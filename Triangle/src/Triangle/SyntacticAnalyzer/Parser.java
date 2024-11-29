@@ -288,21 +288,43 @@ public class Parser {
         commandAST = new WhileCommand(eAST, cAST, commandPos);
       }
       break;
-
-    case Token.FOR:
-      {
+      case Token.FOR: {
+        // Consumir 'for'
         acceptIt();
-        Vname vAST = parseVname();
-        accept(Token.FROM);
-        Expression e1AST = parseExpression();
+    
+        // Parsear la variable de control y la asignación inicial
+        Vname vAST = parseVname(); // Parsear la variable de control
+        accept(Token.BECOMES);      // Consumir el token ':='
+        Expression e1AST = parseExpression(); // Parsear la expresión de inicio (E1)
+    
+        // Parsear el rango (to)
         accept(Token.TO);
-        Expression e2AST = parseExpression();
-        accept(Token.DO);
-        Command cAST = parseSingleCommand();
-        finish(commandPos);
-        commandAST = new ForCommand(vAST, e1AST, e2AST, cAST, commandPos);
-      }
-      break;
+        Expression e2AST = parseExpression(); // Parsear la expresión de fin (E2)
+    
+        // Parsear el paso opcional (by)
+        IntegerLiteral stepAST = null; // Inicializamos el paso como null
+        if (currentToken.kind == Token.BY) { // Si existe el token 'by'
+            acceptIt(); // Consumir el token 'by'
+            stepAST = parseIntegerLiteral(); // Parsear el literal de paso
+        }
+    
+        // Parsear el cuerpo del bucle (do ... comando)
+        accept(Token.DO); // Verificar y consumir el token 'do'
+        Command bodyAST = parseSingleCommand(); // Parsear el cuerpo del bucle
+        
+        // Aceptar el 'end' que termina el for
+        accept(Token.END); // Verificar y consumir el token 'end'
+    
+        // Crear el nodo AST para el comando `for`
+        commandAST = new ForCommand(vAST, e1AST, e2AST, stepAST, bodyAST, commandPos);
+        break;
+    }
+    
+    
+ 
+    
+    
+    
 /*
     case Token.CASE:
       {
