@@ -1,0 +1,8 @@
+let
+    var s: String(5)
+in
+    s := "hello";
+    repeat
+        s := s << "!"
+    until length(s) > 10
+end

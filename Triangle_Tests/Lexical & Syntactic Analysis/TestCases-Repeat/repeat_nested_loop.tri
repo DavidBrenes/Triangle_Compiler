@@ -1,0 +1,13 @@
+let
+    var i: Integer
+    var j: Integer
+in
+    i := 1;
+    repeat
+        j := 0;
+        repeat
+            j := j + 1
+        until j >= 3;
+        i := i + 1
+    until i > 2
+end

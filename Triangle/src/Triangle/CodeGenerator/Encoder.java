@@ -18,8 +18,7 @@ import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Map;
+import Triangle.AbstractSyntaxTrees.RepeatCommand;
 
 import javax.swing.text.TableView.TableRow;
 
@@ -41,6 +40,27 @@ public final class Encoder implements Visitor {
     return null;
   }
 
+  public Object visitDoWhileCommand(DoWhileCommand ast, Object o) {
+      Frame frame = (Frame) o;
+      int loopAddr;
+
+      // Primero genera la dirección de inicio del ciclo
+      loopAddr = nextInstrAddr;
+
+      // Visitar el cuerpo del ciclo
+      ast.C.visit(this, frame);
+
+      // Evaluar la condición del ciclo
+      ast.E.visit(this, frame);
+
+      // Saltar al inicio del ciclo si la condición es verdadera
+      emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, loopAddr);
+
+      return null;
+  }
+
+
+
   public Object visitCallCommand(CallCommand ast, Object o) {
     Frame frame = (Frame) o;
     Integer argsSize = (Integer) ast.APS.visit(this, frame);
@@ -49,59 +69,69 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitCaseCommand(CaseCommand ast, Object o) {
+
+    System.out.println("visitCaseCommand FUNCTION WAS CALLED IN ENCODER");
     Frame frame = (Frame) o;
 
-    emit(Machine.PUSHop, 0, 0, 1); // Flag inicialmente falso.
+    // Save space for the result of matching the case variable.
+    emit(Machine.PUSHop, 0, 0, 1);
+
+    // Generate code to evaluate the case variable.
     ast.V.visit(this, frame);
 
-    ArrayList<Integer> jumpEndAddresses = new ArrayList<>();
-    int jumpDefaultAddr = -1;
-
-    for (Map.Entry<Terminal, Command> entry : ast.MAP.entrySet()) {
-      Terminal label = entry.getKey();
-      Command command = entry.getValue();
-
-      // Cargar el valor de la etiqueta.
-      if (label instanceof IntegerLiteral) {
-        emit(Machine.LOADLop, 0, 0, Integer.parseInt(label.spelling));
-      } else if (label instanceof CharacterLiteral) {
-        emit(Machine.LOADLop, 0, 0, (int) label.spelling.charAt(0));
+    // Iterate over each case in the map.
+    for (Terminal caseLabel : ast.MAP.keySet()) {
+      // Load the case variable and the case label.
+      emit(Machine.LOADop, 1, Machine.STr, -1); // Load the case variable.
+      if (caseLabel instanceof IntegerLiteral) {
+        emit(Machine.LOADLop, 0, 0, Integer.parseInt(caseLabel.spelling));
+      } else if (caseLabel instanceof CharacterLiteral) {
+        emit(Machine.LOADLop, 0, 0, (int) caseLabel.spelling.charAt(0));
       }
 
-      // Comparar.
-      emit(Machine.CALLop, Machine.LBr, Machine.PBr, Machine.eqDisplacement);
+      // Compare the case variable with the label.
+      emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.eqDisplacement);
 
-      // Salto si no coincide.
-      int jumpIfFalseAddr = nextInstrAddr;
-      emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, 0);
+      // Conditionally jump to the case body if match found.
+      int jumpAddr = nextInstrAddr;
+      emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, jumpAddr);
 
-      // Ejecutar el comando del caso.
-      command.visit(this, frame);
+      // Visit the command associated with this case label.
+      ast.MAP.get(caseLabel).visit(this, frame);
 
-      // Saltar al final de la estructura case.
-      jumpEndAddresses.add(nextInstrAddr);
-      emit(Machine.JUMPop, 0, Machine.CBr, 0);
+      // Jump to the end of the case command after executing the case body.
+      int jumpEndAddr = nextInstrAddr;
+      emit(Machine.JUMPop, 0, Machine.CBr, jumpEndAddr);
 
-      // Parchear el salto condicional.
-      patch(jumpIfFalseAddr, nextInstrAddr);
+      // Patch the jump address for the failed match.
+      patch(jumpAddr, nextInstrAddr);
     }
 
-    for (int addr : jumpEndAddresses) {
-      patch(addr, nextInstrAddr);
-    }
+    // Default behavior if no case matches.
+    emit(Machine.LOADLop, 0, 0, 0); // Default: no case matched.
+    int defaultEndAddr = nextInstrAddr;
+    emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, defaultEndAddr);
 
-    if (jumpDefaultAddr != -1) {
-      patch(jumpDefaultAddr, nextInstrAddr);
-    }
+    // Finalize the case command.
+    patch(defaultEndAddr, nextInstrAddr);
 
+    // Pop the space reserved for the match result.
     emit(Machine.POPop, 0, 0, 1);
+
     return null;
   }
 
 
+  public Object visitRepeatCommand(RepeatCommand ast, Object o) {
+      Frame frame = (Frame) o;
+      int loopAddr;
 
-
-
+      loopAddr = nextInstrAddr;
+      ast.C.visit(this, frame);
+      ast.E.visit(this, frame);
+      emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, loopAddr);
+      return null;
+  }
 
 
   public Object visitEmptyCommand(EmptyCommand ast, Object o) {
@@ -157,41 +187,22 @@ public final class Encoder implements Visitor {
     Frame frame = (Frame) o;
     int jumpAddr, loopAddr;
 
-    // Evaluar la expresión de inicio (E1) y almacenarla en la variable de control (V)
-    ast.startExp.visit(this, frame);  // Evaluar la expresión de inicio
-    encodeStore(ast.controlVar, frame, 1);  // Almacenar el valor de E1 en la variable de control
-
-    // Generar el salto condicional al principio del bucle
-    jumpAddr = nextInstrAddr;  // Dirección del salto condicional
-    emit(Machine.JUMPop, 0, Machine.CBr, 0); // Salto condicional
-
-    // Dirección de la etiqueta de inicio del bucle
+    ast.E1.visit(this, frame);
+    encodeStore(ast.V, new Frame (frame, 1), 1);
+    jumpAddr = nextInstrAddr;
+    emit(Machine.JUMPop, 0, Machine.CBr, 0);
     loopAddr = nextInstrAddr;
-
-    // Verificar si el cuerpo del bucle es nulo o no antes de intentar visitarlo
-    if (ast.command != null) {
-        ast.command.visit(this, frame);  // Ejecutar el cuerpo del bucle
-    } else {
-        reporter.reportError("Body of 'for' loop cannot be null", "", ast.position);
-    }
-
-    // Incrementar la variable de control (V)
-    encodeFetch(ast.controlVar, frame, 1);  // Cargar el valor de la variable de control
-    emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.succDisplacement); // Incrementar la variable de control
-    encodeStore(ast.controlVar, frame, 1);  // Guardar el nuevo valor de la variable de control
-
-    // Verificar la condición de fin (E2)
-    patch(jumpAddr, nextInstrAddr);  // Actualizar el salto condicional
-    encodeFetch(ast.controlVar, frame, 1);  // Cargar nuevamente la variable de control
-    ast.endExp.visit(this, frame);  // Evaluar la expresión de fin
-    emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.leDisplacement);  // Comparar si V <= E2
-    emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, loopAddr);  // Si V <= E2, saltar al inicio del bucle
-
+    ast.C.visit(this, frame);
+    encodeFetch(ast.V, frame, 1);
+    emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.succDisplacement);
+    encodeStore(ast.V, new Frame (frame, 1), 1);
+    patch(jumpAddr, nextInstrAddr);
+    encodeFetch(ast.V, frame, 1);
+    ast.E2.visit(this, frame);
+    emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.leDisplacement);
+    emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, loopAddr);
     return null;
-}
-
-
-
+  }
 
   // Expressions
   public Object visitArrayExpression(ArrayExpression ast, Object o) {
@@ -288,59 +299,58 @@ public final class Encoder implements Visitor {
 
 
   public Object visitCaseExpression(CaseExpression ast, Object o) {
+
+    System.out.println("visitCaseExpression FUNCTION WAS CALLED IN ENCODER");
+
     Frame frame = (Frame) o;
 
-    // Evaluate the variable being switched on.
+    // Save space for the result of matching the case variable.
+    emit(Machine.PUSHop, 0, 0, 1);
+
+    // Generate code to evaluate the case variable.
     ast.V.visit(this, frame);
 
-    // Addresses for jumps.
-    ArrayList<Integer> jumpEndAddresses = new ArrayList<>();
-    int jumpDefaultAddr = -1;
-    int valueSize = 0;
-
-    // Process each case (label -> expression).
-    for (Map.Entry<Terminal, Expression> entry : ast.MAP.entrySet()) {
-      Terminal label = entry.getKey();
-      Expression expression = entry.getValue();
-
-      // Load the case label value onto the stack.
-      if (label instanceof IntegerLiteral) {
-        emit(Machine.LOADLop, 0, 0, Integer.parseInt(label.spelling));
-      } else if (label instanceof CharacterLiteral) {
-        emit(Machine.LOADLop, 0, 0, (int) label.spelling.charAt(0));
+    // Iterate over each case in the map.
+    for (Terminal caseLabel : ast.MAP.keySet()) {
+      // Load the case variable and the case label.
+      emit(Machine.LOADop, 1, Machine.STr, -1); // Load the case variable.
+      if (caseLabel instanceof IntegerLiteral) {
+        emit(Machine.LOADLop, 0, 0, Integer.parseInt(caseLabel.spelling));
+      } else if (caseLabel instanceof CharacterLiteral) {
+        emit(Machine.LOADLop, 0, 0, (int) caseLabel.spelling.charAt(0));
       }
 
-      // Compare the label with the case variable.
-      emit(Machine.CALLop, Machine.LBr, Machine.PBr, Machine.eqDisplacement);
+      // Compare the case variable with the label.
+      emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.eqDisplacement);
 
-      // Conditional jump if false.
-      int jumpIfFalseAddr = nextInstrAddr;
-      emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, 0);
+      // Conditionally jump to the case body if match found.
+      int jumpAddr = nextInstrAddr;
+      emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, jumpAddr);
 
-      // Evaluate the expression associated with the case.
-      valueSize = Math.max(valueSize, (Integer) expression.visit(this, frame));
+      // Visit the expression associated with this case label.
+      ast.MAP.get(caseLabel).visit(this, frame);
 
-      // Jump to the end of the case structure.
-      jumpEndAddresses.add(nextInstrAddr);
-      emit(Machine.JUMPop, 0, Machine.CBr, 0);
+      // Jump to the end of the case expression after executing the case body.
+      int jumpEndAddr = nextInstrAddr;
+      emit(Machine.JUMPop, 0, Machine.CBr, jumpEndAddr);
 
-      // Patch the conditional jump to skip to the next case.
-      patch(jumpIfFalseAddr, nextInstrAddr);
+      // Patch the jump address for the failed match.
+      patch(jumpAddr, nextInstrAddr);
     }
 
-    // Patch jumps to the end of the case structure.
-    for (int addr : jumpEndAddresses) {
-      patch(addr, nextInstrAddr);
-    }
+    // Default behavior if no case matches.
+    emit(Machine.LOADLop, 0, 0, 0); // Default: no case matched.
+    int defaultEndAddr = nextInstrAddr;
+    emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, defaultEndAddr);
 
-    // If no default case exists, ensure the flow ends cleanly.
-    if (jumpDefaultAddr != -1) {
-      patch(jumpDefaultAddr, nextInstrAddr);
-    }
+    // Finalize the case expression.
+    patch(defaultEndAddr, nextInstrAddr);
 
-    return valueSize;
+    // Pop the space reserved for the match result.
+    emit(Machine.POPop, 0, 0, 1);
+
+    return null;
   }
-
 
 
   // Declarations

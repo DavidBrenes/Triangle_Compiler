@@ -1,0 +1,7 @@
+let
+    var i: Integer
+in
+    i := 0;
+    repeat
+        i := i + 1
+    end

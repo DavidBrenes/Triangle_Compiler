@@ -12,51 +12,33 @@
  * of the authors.
  */
 
+package Triangle.AbstractSyntaxTrees;
 
- package Triangle.AbstractSyntaxTrees;
+import Triangle.CodeGenerator.RuntimeEntity;
+import Triangle.SyntacticAnalyzer.SourcePosition;
 
- import Triangle.CodeGenerator.RuntimeEntity;
- import Triangle.SyntacticAnalyzer.SourcePosition;
- 
- public abstract class AST implements Cloneable {
-   // want to print "Program", not "Triangle.AbstractSyntaxTrees.Program"
- 
-   protected final static String packageName = "Triangle.AbstractSyntaxTrees";
-   protected static int className = packageName.length()+1;
- 
-   public AST (SourcePosition thePosition) {
-     position = thePosition;
-     entity = null;
-   }
- 
-   public SourcePosition getPosition() {
-     return position;
-   }
- 
-   public abstract Object visit(Visitor v, Object o);
- 
-   public void display() {
-       display(0);
-       System.out.println("\n");
-   }
-     
-   protected void display(int indent){
-       System.out.println();
-       for (int i=0; i<indent; i++)
-     System.out.print("  ");
-       System.out.print(getClass().getName().substring(className));
-   }
- 
-   public Object clone() {
-     try {
-       return super.clone();
-     } catch (CloneNotSupportedException ex) {
-       return null;
-     }
-   }
- 
-   public SourcePosition	position;
- 
-   public RuntimeEntity  entity;
- 
- }
+public abstract class AST {
+
+  public AST (SourcePosition thePosition) {
+    position = thePosition;
+    entity = null;
+  }
+
+  public SourcePosition getPosition() {
+    return position;
+  }
+
+  public abstract Object visit(Visitor v, Object o);
+
+  // Añadir este método
+  public void display(int indent) {
+    // Implementación básica: simplemente imprime la clase con una indentación
+    for (int i = 0; i < indent; i++) {
+      System.out.print("  ");
+    }
+    System.out.println(this.getClass().getSimpleName());
+  }
+
+  public SourcePosition position;
+  public RuntimeEntity entity;
+}

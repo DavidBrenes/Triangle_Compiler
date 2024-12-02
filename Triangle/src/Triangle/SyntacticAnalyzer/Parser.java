@@ -220,6 +220,8 @@ public class Parser {
   }
 
   Command parseSingleCommand() throws SyntaxError {
+
+
     Command commandAST = null; // in case there's a syntactic error
     //System.out.println(currentToken.toString());
     SourcePosition commandPos = new SourcePosition();
@@ -248,6 +250,20 @@ public class Parser {
       }
       break;
 
+    
+case Token.REPEAT:
+{
+    acceptIt(); // Consume el token `repeat`.
+    Command cAST = parseSingleCommand(); // Parsear el cuerpo del bucle.
+    accept(Token.UNTIL); // Asegúrate de que `until` siga al cuerpo del bucle.
+    Expression eAST = parseExpression(); // Parsear la condición.
+    accept(Token.END); // Asegúrate de que el bucle termine con `end`.
+    finish(commandPos); // Marca la posición final del comando.
+    commandAST = new RepeatCommand(cAST, eAST, commandPos); // Crea el nodo AST para `RepeatCommand`.
+}
+break;
+
+
     case Token.BEGIN:
       acceptIt();
       commandAST = parseCommand();
@@ -265,6 +281,17 @@ public class Parser {
       }
       break;
 
+    case Token.DO:
+      {
+        acceptIt();
+        Command doCommandAST = parseSingleCommand();
+        accept(Token.WHILE);
+        Expression whileExpressionAST = parseExpression();
+        finish(commandPos);
+        commandAST = new DoWhileCommand(doCommandAST, whileExpressionAST, commandPos);
+      }
+      break;
+      
     case Token.IF:
       {
         acceptIt();

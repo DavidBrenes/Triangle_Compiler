@@ -56,6 +56,8 @@ public class LayoutVisitor implements Visitor {
   public Object visitWhileCommand(WhileCommand ast, Object obj) {
     return layoutBinary("WhileCom.", ast.E, ast.C);
   }
+
+  
   
   @Override
   public Object visitForCommand(ForCommand ast, Object obj) {
@@ -64,11 +66,25 @@ public class LayoutVisitor implements Visitor {
 }
   
 
-  public Object visitCaseCommand(CaseCommand caseCommand, Object o) {
-    // TODO Auto-generated method stub
-    System.out.println("visitCaseCommand FUNCTION WAS CALLED IN LAYOUT VISITOR");
-    return null;
-}
+  public Object visitCaseCommand(CaseCommand ast, Object obj) {
+      System.out.println("visitCaseCommand FUNCTION WAS CALLED IN LAYOUT VISITOR");
+      DrawingTree dt = layoutCaption("CaseCom.");
+
+      // El CaseCommand tiene un map de valores y comandos asociados.
+      DrawingTree vTree = (DrawingTree) ast.V.visit(this, null); // Variable evaluada en el case
+      dt.setChildren(new DrawingTree[] {vTree});
+      attachParent(dt, join(dt));
+
+      for (Terminal terminal : ast.MAP.keySet()) {
+          DrawingTree caseLabelTree = (DrawingTree) terminal.visit(this, null);
+          DrawingTree commandTree = (DrawingTree) ast.MAP.get(terminal).visit(this, null);
+          dt.addChildren(new DrawingTree[] {caseLabelTree, commandTree});
+          attachParent(dt, join(dt));
+      }
+
+      return dt;
+  }
+
 
   // Expressions
   public Object visitArrayExpression(ArrayExpression ast, Object obj) {
@@ -94,6 +110,11 @@ public class LayoutVisitor implements Visitor {
   public Object visitIfExpression(IfExpression ast, Object obj) {
     return layoutTernary("IfExpr.", ast.E1, ast.E2, ast.E3);
   }
+
+  public Object visitRepeatCommand(RepeatCommand ast, Object obj) {
+    return layoutBinary("RepeatCom.", ast.C, ast.E);
+  }
+
 
   public Object visitIntegerExpression(IntegerExpression ast, Object obj) {
     return layoutUnary("Int.Expr.", ast.IL);
@@ -182,6 +203,13 @@ public class LayoutVisitor implements Visitor {
   public Object visitFuncFormalParameter(FuncFormalParameter ast, Object obj) {
     return layoutTernary("FuncF.P.", ast.I, ast.FPS, ast.T);
   }
+
+
+  public Object visitDoWhileCommand(DoWhileCommand ast, Object obj) {
+    // Crear el nodo de dibujo para el comando DoWhile
+    return layoutBinary("DoWhileCom.", ast.C, ast.E);
+  }
+
 
   public Object visitProcFormalParameter(ProcFormalParameter ast, Object obj) {
     return layoutBinary("ProcF.P.", ast.I, ast.FPS);
