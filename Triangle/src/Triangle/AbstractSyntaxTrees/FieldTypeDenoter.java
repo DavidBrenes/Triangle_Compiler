@@ -16,11 +16,13 @@ package Triangle.AbstractSyntaxTrees;
 
 import Triangle.SyntacticAnalyzer.SourcePosition;
 
-public abstract class FieldTypeDenoter extends TypeDenoter {
+public abstract class FieldTypeDenoter extends AST {
 
   public FieldTypeDenoter(SourcePosition thePosition) {
     super (thePosition);
   }
 
-  public abstract boolean equals (Object obj);
+  public abstract Object visit(Visitor v, Object o);
+
+  //public abstract boolean equals (Object obj);
 }

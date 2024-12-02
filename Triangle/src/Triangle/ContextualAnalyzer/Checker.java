@@ -464,6 +464,51 @@ public final class Checker implements Visitor {
     return ast.type;
   }
 
+  @Override
+  public Object visitRecordDeclaration(RecordTypeDeclaration ast, Object o) {
+    FieldTypeDenoter currentField = ast.fields; // Nodo raíz de los campos
+
+    // Conjunto para verificar duplicados en los nombres de campos
+    HashSet<String> fieldNames = new HashSet<>();
+
+    while (currentField != null) {
+      if (currentField instanceof SingleFieldTypeDenoter) {
+        SingleFieldTypeDenoter singleField = (SingleFieldTypeDenoter) currentField;
+
+        // Verificar duplicado
+        if (fieldNames.contains(singleField.I.spelling)) {
+          reporter.reportError("Field name \"%\" is duplicated in the record",
+                  singleField.I.spelling, singleField.position);
+        } else {
+          fieldNames.add(singleField.I.spelling);
+        }
+
+        // Validar el tipo del campo
+        singleField.T.visit(this, null);
+
+        currentField = null; // Fin de la lista
+      } else if (currentField instanceof MultipleFieldTypeDenoter) {
+        MultipleFieldTypeDenoter multiField = (MultipleFieldTypeDenoter) currentField;
+
+        // Verificar duplicado
+        if (fieldNames.contains(multiField.I.spelling)) {
+          reporter.reportError("Field name \"%\" is duplicated in the record",
+                  multiField.I.spelling, multiField.position);
+        } else {
+          fieldNames.add(multiField.I.spelling);
+        }
+
+        // Validar el tipo del campo actual
+        multiField.T.visit(this, null);
+
+        // Continuar con el siguiente campo
+        currentField = multiField.FT;
+      }
+    }
+
+    return null;
+  }
+
   // Formal Parameters
 
   // Always returns null. Does not use the given object.
@@ -692,6 +737,26 @@ public final class Checker implements Visitor {
   public Object visitRecordTypeDenoter(RecordTypeDenoter ast, Object o) {
     ast.FT = (FieldTypeDenoter) ast.FT.visit(this, null);
     return ast;
+  }
+
+  /**
+   * @param ast
+   * @param o
+   * @return
+   */
+  @Override
+  public Object visitProcedureFieldTypeDenoter(ProcedureFieldTypeDenoter ast, Object o) {
+    return null;
+  }
+
+  /**
+   * @param ast
+   * @param o
+   * @return
+   */
+  @Override
+  public Object visitFunctionFieldTypeDenoter(FunctionFieldTypeDenoter ast, Object o) {
+    return null;
   }
 
   public Object visitMultipleFieldTypeDenoter(MultipleFieldTypeDenoter ast, Object o) {

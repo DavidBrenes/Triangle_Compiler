@@ -64,6 +64,7 @@ public interface Visitor {
   // Record Aggregates
   public abstract Object visitMultipleRecordAggregate(MultipleRecordAggregate ast, Object o);
   public abstract Object visitSingleRecordAggregate(SingleRecordAggregate ast, Object o);
+  public abstract Object visitRecordDeclaration(RecordTypeDeclaration ast, Object o);
 
   // Formal Parameters
   public abstract Object visitConstFormalParameter(ConstFormalParameter ast, Object o);
@@ -95,6 +96,10 @@ public interface Visitor {
   public abstract Object visitIntTypeDenoter(IntTypeDenoter ast, Object o);
   public abstract Object visitRecordTypeDenoter(RecordTypeDenoter ast, Object o);
 
+  public abstract Object visitProcedureFieldTypeDenoter(ProcedureFieldTypeDenoter ast, Object o);
+  public abstract Object visitFunctionFieldTypeDenoter(FunctionFieldTypeDenoter ast, Object o);
+
+
   public abstract Object visitMultipleFieldTypeDenoter(MultipleFieldTypeDenoter ast, Object o);
   public abstract Object visitSingleFieldTypeDenoter(SingleFieldTypeDenoter ast, Object o);
 
@@ -114,5 +119,6 @@ public interface Visitor {
 
   // Programs
   public abstract Object visitProgram(Program ast, Object o);
+
 
 }

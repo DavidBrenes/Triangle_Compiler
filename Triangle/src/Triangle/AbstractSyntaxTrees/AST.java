@@ -19,6 +19,9 @@ import Triangle.SyntacticAnalyzer.SourcePosition;
 
 public abstract class AST {
 
+  protected final static String packageName = "Triangle.AbstractSyntaxTrees";
+  protected static int className = packageName.length()+1;
+
   public AST (SourcePosition thePosition) {
     position = thePosition;
     entity = null;
@@ -30,15 +33,32 @@ public abstract class AST {
 
   public abstract Object visit(Visitor v, Object o);
 
-  // Añadir este método
-  public void display(int indent) {
-    // Implementación básica: simplemente imprime la clase con una indentación
-    for (int i = 0; i < indent; i++) {
-      System.out.print("  ");
-    }
-    System.out.println(this.getClass().getSimpleName());
+  public void display() {
+    display(0);
+    System.out.println("\n");
   }
 
-  public SourcePosition position;
-  public RuntimeEntity entity;
+  protected void display(int indent){
+    System.out.println();
+    for (int i=0; i<indent; i++)
+      System.out.print("  ");
+    System.out.print(getClass().getName().substring(className));
+  }
+
+  public Object clone() {
+    try {
+      return super.clone();
+    } catch (CloneNotSupportedException ex) {
+      return null;
+    }
+  }
+
+  public SourcePosition	position;
+
+  public RuntimeEntity  entity;
+
+
+
+
+
 }

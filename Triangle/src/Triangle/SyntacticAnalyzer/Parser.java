@@ -422,6 +422,8 @@ break;
       break;
 
     default:
+      System.out.println(currentToken.toString());
+
       syntacticError("\"%\" cannot start a command",
         currentToken.spelling);
       break;
@@ -443,7 +445,7 @@ break;
     SourcePosition expressionPos = new SourcePosition();
 
     start (expressionPos);
-   //System.out.println(currentToken.toString());
+   //(currentToken.toString());
 
 
     switch (currentToken.kind) {
@@ -741,7 +743,16 @@ break;
         declarationAST = new VarDeclaration(iAST, tAST, declarationPos);
       }
       break;
-
+    case Token.RECORD:
+      {
+        // Nuevo bloque para manejar RECORD
+        acceptIt(); // Consumir la palabra clave 'record'
+        FieldTypeDenoter fieldAST = parseFieldTypeDenoter(); // Analizar los campos del record
+        accept(Token.END); // Esperar la palabra clave 'end'
+        finish(declarationPos);
+        declarationAST = new RecordDeclaration(fieldAST, declarationPos); // Crear declaración de record
+      }
+      break;
     case Token.PROC:
       {
         acceptIt();
@@ -785,6 +796,7 @@ break;
       break;
 
     default:
+      System.out.println(currentToken.toString());
       syntacticError("\"%\" cannot start a declaration",
         currentToken.spelling);
       break;

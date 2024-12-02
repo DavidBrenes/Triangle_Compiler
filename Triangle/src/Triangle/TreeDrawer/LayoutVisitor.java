@@ -14,8 +14,13 @@
 
 package Triangle.TreeDrawer;
 
-import Triangle.AbstractSyntaxTrees.*;
 import java.awt.FontMetrics;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import Triangle.AbstractSyntaxTrees.*;
 
 public class LayoutVisitor implements Visitor {
 
@@ -56,35 +61,16 @@ public class LayoutVisitor implements Visitor {
   public Object visitWhileCommand(WhileCommand ast, Object obj) {
     return layoutBinary("WhileCom.", ast.E, ast.C);
   }
-
   
-  
-  @Override
   public Object visitForCommand(ForCommand ast, Object obj) {
-    // Llamada a la función auxiliar para el formato del comando "for"
-    return layoutQuaternary("For", ast.controlVar, ast.startExp, ast.endExp, ast.command);
-}
-  
-
-  public Object visitCaseCommand(CaseCommand ast, Object obj) {
-      System.out.println("visitCaseCommand FUNCTION WAS CALLED IN LAYOUT VISITOR");
-      DrawingTree dt = layoutCaption("CaseCom.");
-
-      // El CaseCommand tiene un map de valores y comandos asociados.
-      DrawingTree vTree = (DrawingTree) ast.V.visit(this, null); // Variable evaluada en el case
-      dt.setChildren(new DrawingTree[] {vTree});
-      attachParent(dt, join(dt));
-
-      for (Terminal terminal : ast.MAP.keySet()) {
-          DrawingTree caseLabelTree = (DrawingTree) terminal.visit(this, null);
-          DrawingTree commandTree = (DrawingTree) ast.MAP.get(terminal).visit(this, null);
-          dt.addChildren(new DrawingTree[] {caseLabelTree, commandTree});
-          attachParent(dt, join(dt));
-      }
-
-      return dt;
+    return layoutQuaternary("ForCom.", ast.V, ast.E1, ast.E2, ast.C);
   }
 
+  public Object visitCaseCommand(CaseCommand ast, Object o) {
+    // TODO Auto-generated method stub
+    //System.out.println("visitCaseCommand FUNCTION WAS CALLED IN LAYOUT VISITOR");
+    return layoutBinary_CaseCommand("CaseCom.",ast.V,ast.MAP);
+}
 
   // Expressions
   public Object visitArrayExpression(ArrayExpression ast, Object obj) {
@@ -111,11 +97,6 @@ public class LayoutVisitor implements Visitor {
     return layoutTernary("IfExpr.", ast.E1, ast.E2, ast.E3);
   }
 
-  public Object visitRepeatCommand(RepeatCommand ast, Object obj) {
-    return layoutBinary("RepeatCom.", ast.C, ast.E);
-  }
-
-
   public Object visitIntegerExpression(IntegerExpression ast, Object obj) {
     return layoutUnary("Int.Expr.", ast.IL);
   }
@@ -136,9 +117,9 @@ public class LayoutVisitor implements Visitor {
     return layoutUnary("VnameExpr.", ast.V);
   }
 
-  public Object visitCaseExpression(CaseExpression caseExpression, Object o) {
-    System.out.println("visitCaseExpression FUNCTION WAS CALLED IN LAYOUT VISITOR");
-    return null;
+  public Object visitCaseExpression(CaseExpression ast, Object o) {
+    //System.out.println("visitCaseExpression FUNCTION WAS CALLED IN LAYOUT VISITOR");
+    return layoutBinary_CaseExpression("CaseCom.",ast.V,ast.MAP);
   }
 
   // Declarations
@@ -194,6 +175,16 @@ public class LayoutVisitor implements Visitor {
     return layoutBinary("Sing.Rec.Agg.", ast.I, ast.E);
   }
 
+  @Override
+  public Object visitRecordDeclaration(RecordTypeDeclaration ast, Object obj) {
+    DrawingTree dt = layoutCaption("RecordDecl.");
+    DrawingTree fieldsTree = (DrawingTree) ast.fields.visit(this, null);
+    dt.setChildren(new DrawingTree[] {fieldsTree});
+    attachParent(dt, join(dt));
+
+    return dt;
+  }
+
 
   // Formal Parameters
   public Object visitConstFormalParameter(ConstFormalParameter ast, Object obj) {
@@ -203,13 +194,6 @@ public class LayoutVisitor implements Visitor {
   public Object visitFuncFormalParameter(FuncFormalParameter ast, Object obj) {
     return layoutTernary("FuncF.P.", ast.I, ast.FPS, ast.T);
   }
-
-
-  public Object visitDoWhileCommand(DoWhileCommand ast, Object obj) {
-    // Crear el nodo de dibujo para el comando DoWhile
-    return layoutBinary("DoWhileCom.", ast.C, ast.E);
-  }
-
 
   public Object visitProcFormalParameter(ProcFormalParameter ast, Object obj) {
     return layoutBinary("ProcF.P.", ast.I, ast.FPS);
@@ -295,6 +279,26 @@ public class LayoutVisitor implements Visitor {
 
   public Object visitRecordTypeDenoter(RecordTypeDenoter ast, Object obj) {
     return layoutUnary("Rec.TypeD.", ast.FT);
+  }
+
+  /**
+   * @param ast
+   * @param o
+   * @return
+   */
+  @Override
+  public Object visitProcedureFieldTypeDenoter(ProcedureFieldTypeDenoter ast, Object o) {
+    return null;
+  }
+
+  /**
+   * @param ast
+   * @param o
+   * @return
+   */
+  @Override
+  public Object visitFunctionFieldTypeDenoter(FunctionFieldTypeDenoter ast, Object o) {
+    return null;
   }
 
 
@@ -397,6 +401,86 @@ public class LayoutVisitor implements Visitor {
     DrawingTree d4 = (DrawingTree) child4.visit(this, null);
     dt.setChildren(new DrawingTree[] {d1, d2, d3, d4});
     attachParent(dt, join(dt));
+    return dt;
+  }
+
+  private DrawingTree layoutBinary_CaseCommand(String name, AST child1, LinkedHashMap<Terminal, Command> child2) {
+    // Create a tree for the caption
+    DrawingTree dt = layoutCaption(name);
+
+    // Visit the first child and generate its tree
+    DrawingTree d1 = (DrawingTree) child1.visit(this, null);
+
+    // Create a list to hold all DrawingTrees generated from child2
+    List<DrawingTree> child2Trees = new ArrayList<>();
+
+    // Iterate over the LinkedHashMap and create a DrawingTree for each entry
+    for (Map.Entry<Terminal, Command> entry : child2.entrySet()) {
+      // Create DrawingTree for the key
+      DrawingTree keyTree = (DrawingTree) entry.getKey().visit(this, null);
+
+      // Create DrawingTree for the value
+      DrawingTree valueTree = (DrawingTree) entry.getValue().visit(this, null);
+
+      // Combine key and value into a single DrawingTree node
+      DrawingTree pairTree = layoutCaption("Pair");
+      pairTree.setChildren(new DrawingTree[] {keyTree, valueTree});
+
+      // Add the pair tree to the list
+      child2Trees.add(pairTree);
+    }
+
+    // Combine all child2 trees into a single DrawingTree
+    DrawingTree d2 = layoutCaption("Child2");
+    d2.setChildren(child2Trees.toArray(new DrawingTree[0]));
+
+    // Set the children for the main tree
+    dt.setChildren(new DrawingTree[] {d1, d2});
+
+    // Attach parent and adjust layout
+    attachParent(dt, join(dt));
+
+    return dt;
+  }
+
+
+
+  private DrawingTree layoutBinary_CaseExpression(String name, AST child1, LinkedHashMap<Terminal, Expression> child2) {
+    // Create a tree for the caption
+    DrawingTree dt = layoutCaption(name);
+
+    // Visit the first child and generate its tree
+    DrawingTree d1 = (DrawingTree) child1.visit(this, null);
+
+    // Create a list to hold all DrawingTrees generated from child2
+    List<DrawingTree> child2Trees = new ArrayList<>();
+
+    // Iterate over the LinkedHashMap and create a DrawingTree for each entry
+    for (Map.Entry<Terminal, Expression> entry : child2.entrySet()) {
+      // Create DrawingTree for the key
+      DrawingTree keyTree = (DrawingTree) entry.getKey().visit(this, null);
+
+      // Create DrawingTree for the value
+      DrawingTree valueTree = (DrawingTree) entry.getValue().visit(this, null);
+
+      // Combine key and value into a single DrawingTree node
+      DrawingTree pairTree = layoutCaption("Pair");
+      pairTree.setChildren(new DrawingTree[] {keyTree, valueTree});
+
+      // Add the pair tree to the list
+      child2Trees.add(pairTree);
+    }
+
+    // Combine all child2 trees into a single DrawingTree
+    DrawingTree d2 = layoutCaption("Child2");
+    d2.setChildren(child2Trees.toArray(new DrawingTree[0]));
+
+    // Set the children for the main tree
+    dt.setChildren(new DrawingTree[] {d1, d2});
+
+    // Attach parent and adjust layout
+    attachParent(dt, join(dt));
+
     return dt;
   }
 
