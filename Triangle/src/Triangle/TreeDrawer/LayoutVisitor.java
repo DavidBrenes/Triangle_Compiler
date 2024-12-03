@@ -391,62 +391,81 @@ public class LayoutVisitor implements Visitor {
   }
 
 
-  private DrawingTree layoutBinary_CaseCommand(String name, AST child1, LinkedHashMap<Terminal, Command> child2) {
-    // Create a tree for the caption
-    DrawingTree dt = layoutCaption(name);
-    // Visit the first child and generate its tree
-    DrawingTree d1 = (DrawingTree) child1.visit(this, null);
-    // Create a list to hold all DrawingTrees generated from child2
-    List<DrawingTree> child2Trees = new ArrayList<>();
-    // Iterate over the LinkedHashMap and create a DrawingTree for each entry
-    for (Map.Entry<Terminal, Command> entry : child2.entrySet()) {
-      // Create DrawingTree for the key
-      DrawingTree keyTree = (DrawingTree) entry.getKey().visit(this, null);
-      // Create DrawingTree for the value
-      DrawingTree valueTree = (DrawingTree) entry.getValue().visit(this, null);
-      // Combine key and value into a single DrawingTree node
-      DrawingTree pairTree = layoutCaption("Pair");
-      pairTree.setChildren(new DrawingTree[] {keyTree, valueTree});
-      // Add the pair tree to the list
-      child2Trees.add(pairTree);
+  private DrawingTree layoutBinary_CaseCommand(String rootLabel, Vname vAST, LinkedHashMap<Terminal, Command> map) {
+    // Crear el nodo raíz para el CaseCommand
+    DrawingTree root = new DrawingTree(rootLabel, 100, 20);
+
+    // Crear un nodo para la variable de control (Vname)
+    DrawingTree controlVarNode = (DrawingTree) vAST.visit(this, null);
+
+    // Crear un arreglo para los nodos de los casos
+    DrawingTree[] caseNodes = new DrawingTree[map.size()];
+
+    // Recorrer el mapa y crear nodos para cada caso
+    int index = 0;
+    for (Map.Entry<Terminal, Command> entry : map.entrySet()) {
+      // Nodo para el par caso (clave y comando)
+      DrawingTree caseNode = new DrawingTree("Case", 80, 20);
+
+      // Nodo para la clave (Terminal)
+      DrawingTree keyNode = (DrawingTree) entry.getKey().visit(this, null);
+
+      // Nodo para el comando asociado
+      DrawingTree commandNode = (DrawingTree) entry.getValue().visit(this, null);
+
+      // Establecer los hijos del nodo del caso
+      caseNode.setChildren(new DrawingTree[]{keyNode, commandNode});
+
+      // Añadir el nodo del caso al arreglo
+      caseNodes[index++] = caseNode;
     }
-    // Combine all child2 trees into a single DrawingTree
-    DrawingTree d2 = layoutCaption("Child2");
-    d2.setChildren(child2Trees.toArray(new DrawingTree[0]));
-    // Set the children for the main tree
-    dt.setChildren(new DrawingTree[] {d1, d2});
-    // Attach parent and adjust layout
-    attachParent(dt, join(dt));
-    return dt;
+
+    // Establecer los hijos del nodo raíz (variable de control y casos)
+    root.setChildren(new DrawingTree[]{controlVarNode});
+    root.setChildren(caseNodes);
+
+    return root;
   }
-  private DrawingTree layoutBinary_CaseExpression(String name, AST child1, LinkedHashMap<Terminal, Expression> child2) {
-    // Create a tree for the caption
-    DrawingTree dt = layoutCaption(name);
-    // Visit the first child and generate its tree
-    DrawingTree d1 = (DrawingTree) child1.visit(this, null);
-    // Create a list to hold all DrawingTrees generated from child2
-    List<DrawingTree> child2Trees = new ArrayList<>();
-    // Iterate over the LinkedHashMap and create a DrawingTree for each entry
-    for (Map.Entry<Terminal, Expression> entry : child2.entrySet()) {
-      // Create DrawingTree for the key
-      DrawingTree keyTree = (DrawingTree) entry.getKey().visit(this, null);
-      // Create DrawingTree for the value
-      DrawingTree valueTree = (DrawingTree) entry.getValue().visit(this, null);
-      // Combine key and value into a single DrawingTree node
-      DrawingTree pairTree = layoutCaption("Pair");
-      pairTree.setChildren(new DrawingTree[] {keyTree, valueTree});
-      // Add the pair tree to the list
-      child2Trees.add(pairTree);
+
+
+  private DrawingTree layoutBinary_CaseExpression(String rootLabel, Vname vAST, LinkedHashMap<Terminal, Expression> map) {
+    // Crear el nodo raíz para el CaseExpression
+    DrawingTree root = new DrawingTree(rootLabel, 100, 20);
+
+    // Crear un nodo para la variable de control (Vname)
+    DrawingTree controlVarNode = (DrawingTree) vAST.visit(this, null);
+
+    // Crear un arreglo para los nodos de los casos
+    DrawingTree[] caseNodes = new DrawingTree[map.size()];
+
+    // Recorrer el mapa y crear nodos para cada caso
+    int index = 0;
+    for (Map.Entry<Terminal, Expression> entry : map.entrySet()) {
+      // Nodo para el par caso (clave y comando)
+      DrawingTree caseNode = new DrawingTree("Case", 80, 20);
+
+      // Nodo para la clave (Terminal)
+      DrawingTree keyNode = (DrawingTree) entry.getKey().visit(this, null);
+
+      // Nodo para el comando asociado
+      DrawingTree expressionNode = (DrawingTree) entry.getValue().visit(this, null);
+
+      // Establecer los hijos del nodo del caso
+      caseNode.setChildren(new DrawingTree[]{keyNode, expressionNode});
+
+      // Añadir el nodo del caso al arreglo
+      caseNodes[index++] = caseNode;
     }
-    // Combine all child2 trees into a single DrawingTree
-    DrawingTree d2 = layoutCaption("Child2");
-    d2.setChildren(child2Trees.toArray(new DrawingTree[0]));
-    // Set the children for the main tree
-    dt.setChildren(new DrawingTree[] {d1, d2});
-    // Attach parent and adjust layout
-    attachParent(dt, join(dt));
-    return dt;
+
+    // Establecer los hijos del nodo raíz (variable de control y casos)
+    root.setChildren(new DrawingTree[]{controlVarNode});
+    root.setChildren(caseNodes);
+
+    return root;
   }
+
+
+
 
 
 

@@ -18,6 +18,9 @@ import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Map;
+
 import Triangle.AbstractSyntaxTrees.RepeatCommand;
 
 import javax.swing.text.TableView.TableRow;
@@ -69,57 +72,59 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitCaseCommand(CaseCommand ast, Object o) {
-
-    //System.out.println("visitCaseCommand FUNCTION WAS CALLED IN ENCODER");
     Frame frame = (Frame) o;
+    int endAddr;
 
-    // Save space for the result of matching the case variable.
-    emit(Machine.PUSHop, 0, 0, 1);
-
-    // Generate code to evaluate the case variable.
+    // Cargar la variable de control en la pila
     ast.V.visit(this, frame);
 
-    // Iterate over each case in the map.
-    for (Terminal caseLabel : ast.MAP.keySet()) {
-      // Load the case variable and the case label.
-      emit(Machine.LOADop, 1, Machine.STr, -1); // Load the case variable.
-      if (caseLabel instanceof IntegerLiteral) {
-        emit(Machine.LOADLop, 0, 0, Integer.parseInt(caseLabel.spelling));
-      } else if (caseLabel instanceof CharacterLiteral) {
-        emit(Machine.LOADLop, 0, 0, (int) caseLabel.spelling.charAt(0));
-      }
+    // Dirección inicial de los casos
+    int caseStartAddr = nextInstrAddr;
 
-      // Compare the case variable with the label.
+    // Generar código para cada caso
+    for (Map.Entry<Terminal, Command> entry : ast.MAP.entrySet()) {
+      Terminal literal = entry.getKey();
+      Command command = entry.getValue();
+
+      // Duplicar la variable de control para mantenerla en la pila
+      emit(Machine.LOADop, 1, Machine.STr, -1);
+
+      // Cargar el literal en la pila
+      literal.visit(this, frame);
+
+      // Realizar la comparación
       emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.eqDisplacement);
 
-      // Conditionally jump to the case body if match found.
-      int jumpAddr = nextInstrAddr;
-      emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, jumpAddr);
+      //System.out.println("Next line"+nextInstrAddr);
+      // Saltar al siguiente caso si no hay coincidencia
+      int jumpIfNotEqualAddr = nextInstrAddr;
+      emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, 0);
 
-      // Visit the command associated with this case label.
-      ast.MAP.get(caseLabel).visit(this, frame);
+      // Ejecutar el comando asociado al caso
+      command.visit(this, frame);
 
-      // Jump to the end of the case command after executing the case body.
-      int jumpEndAddr = nextInstrAddr;
-      emit(Machine.JUMPop, 0, Machine.CBr, jumpEndAddr);
+      // Saltar al final del bloque después de ejecutar el comando
+      int jumpToEndAddr = nextInstrAddr;
+      emit(Machine.JUMPop, 0, Machine.CBr, 0);
 
-      // Patch the jump address for the failed match.
-      patch(jumpAddr, nextInstrAddr);
+      // Ajustar el salto condicional para casos no iguales
+      patch(jumpIfNotEqualAddr, nextInstrAddr);
     }
 
-    // Default behavior if no case matches.
-    emit(Machine.LOADLop, 0, 0, 0); // Default: no case matched.
-    int defaultEndAddr = nextInstrAddr;
-    emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, defaultEndAddr);
+    // Dirección del final del bloque case
+    endAddr = nextInstrAddr;
 
-    // Finalize the case command.
-    patch(defaultEndAddr, nextInstrAddr);
-
-    // Pop the space reserved for the match result.
-    emit(Machine.POPop, 0, 0, 1);
+    // Ajustar los saltos al final
+    patch(caseStartAddr, endAddr);
 
     return null;
   }
+
+
+
+
+
+
 
 
   public Object visitRepeatCommand(RepeatCommand ast, Object o) {
@@ -315,58 +320,51 @@ public final class Encoder implements Visitor {
 
 
   public Object visitCaseExpression(CaseExpression ast, Object o) {
-
-    //System.out.println("visitCaseExpression FUNCTION WAS CALLED IN ENCODER");
-
     Frame frame = (Frame) o;
 
-    // Save space for the result of matching the case variable.
-    emit(Machine.PUSHop, 0, 0, 1);
-
-    // Generate code to evaluate the case variable.
+    // Cargar la variable de control en la pila
     ast.V.visit(this, frame);
 
-    // Iterate over each case in the map.
-    for (Terminal caseLabel : ast.MAP.keySet()) {
-      // Load the case variable and the case label.
-      emit(Machine.LOADop, 1, Machine.STr, -1); // Load the case variable.
-      if (caseLabel instanceof IntegerLiteral) {
-        emit(Machine.LOADLop, 0, 0, Integer.parseInt(caseLabel.spelling));
-      } else if (caseLabel instanceof CharacterLiteral) {
-        emit(Machine.LOADLop, 0, 0, (int) caseLabel.spelling.charAt(0));
-      }
+    // Dirección inicial de los casos
+    int caseStartAddr = nextInstrAddr;
 
-      // Compare the case variable with the label.
+    // Generar código para cada caso
+    for (Map.Entry<Terminal, Expression> entry : ast.MAP.entrySet()) {
+      Terminal literal = entry.getKey();
+      Expression expression = entry.getValue();
+
+      // Duplicar la variable de control para mantenerla en la pila
+      emit(Machine.LOADop, 1, Machine.STr, -1);
+
+      // Cargar el literal en la pila
+      literal.visit(this, frame);
+
+      // Realizar la comparación
       emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.eqDisplacement);
 
-      // Conditionally jump to the case body if match found.
-      int jumpAddr = nextInstrAddr;
-      emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, jumpAddr);
+      //System.out.println("Next line"+nextInstrAddr);
+      // Saltar al siguiente caso si no hay coincidencia
+      int jumpIfNotEqualAddr = nextInstrAddr;
+      emit(Machine.JUMPIFop, Machine.falseRep, Machine.CBr, 0);
 
-      // Visit the expression associated with this case label.
-      ast.MAP.get(caseLabel).visit(this, frame);
+      // Evaluar la expresión asociada al caso si hay coincidencia
+      expression.visit(this, frame);
 
-      // Jump to the end of the case expression after executing the case body.
-      int jumpEndAddr = nextInstrAddr;
-      emit(Machine.JUMPop, 0, Machine.CBr, jumpEndAddr);
+      // Saltar al final del bloque después de evaluar la expresión
+      int jumpToEndAddr = nextInstrAddr;
+      emit(Machine.JUMPop, 0, Machine.CBr, 0);
 
-      // Patch the jump address for the failed match.
-      patch(jumpAddr, nextInstrAddr);
+      // Ajustar el salto al siguiente caso si no hay coincidencia
+      patch(jumpIfNotEqualAddr, nextInstrAddr);
     }
 
-    // Default behavior if no case matches.
-    emit(Machine.LOADLop, 0, 0, 0); // Default: no case matched.
-    int defaultEndAddr = nextInstrAddr;
-    emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, defaultEndAddr);
+    // Dirección del final del bloque case
+    int endAddr = nextInstrAddr;
 
-    // Finalize the case expression.
-    patch(defaultEndAddr, nextInstrAddr);
-
-    // Pop the space reserved for the match result.
-    emit(Machine.POPop, 0, 0, 1);
-
+    // No se necesita parchear el salto inicial, ya que cada caso gestiona su propio flujo
     return null;
   }
+
 
 
   // Declarations

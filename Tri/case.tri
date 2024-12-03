@@ -2,7 +2,7 @@ let
     var age : Integer
 in
     begin
-        age := 20;
+        age := 25;
         case age of
             20 : putint(1)
             25 : putint(5)
