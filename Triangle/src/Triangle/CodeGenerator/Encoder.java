@@ -70,7 +70,7 @@ public final class Encoder implements Visitor {
 
   public Object visitCaseCommand(CaseCommand ast, Object o) {
 
-    System.out.println("visitCaseCommand FUNCTION WAS CALLED IN ENCODER");
+    //System.out.println("visitCaseCommand FUNCTION WAS CALLED IN ENCODER");
     Frame frame = (Frame) o;
 
     // Save space for the result of matching the case variable.
@@ -182,25 +182,41 @@ public final class Encoder implements Visitor {
     emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, loopAddr);
     return null;
   }
-  
+
   public Object visitForCommand(ForCommand ast, Object o) {
     Frame frame = (Frame) o;
     int jumpAddr, loopAddr;
 
-    ast.E1.visit(this, frame);
-    encodeStore(ast.V, new Frame (frame, 1), 1);
-    jumpAddr = nextInstrAddr;
-    emit(Machine.JUMPop, 0, Machine.CBr, 0);
+    // Evaluar la expresión de inicio (E1) y almacenarla en la variable de control (V)
+    ast.startExp.visit(this, frame);  // Evaluar la expresión de inicio
+    encodeStore(ast.controlVar, frame, 1);  // Almacenar el valor de E1 en la variable de control
+
+    // Generar el salto condicional al principio del bucle
+    jumpAddr = nextInstrAddr;  // Dirección del salto condicional
+    emit(Machine.JUMPop, 0, Machine.CBr, 0); // Salto condicional
+
+
     loopAddr = nextInstrAddr;
-    ast.C.visit(this, frame);
-    encodeFetch(ast.V, frame, 1);
-    emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.succDisplacement);
-    encodeStore(ast.V, new Frame (frame, 1), 1);
-    patch(jumpAddr, nextInstrAddr);
-    encodeFetch(ast.V, frame, 1);
-    ast.E2.visit(this, frame);
-    emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.leDisplacement);
-    emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, loopAddr);
+
+    // Verificar si el cuerpo del bucle es nulo o no antes de intentar visitarlo
+    if (ast.command != null) {
+      ast.command.visit(this, frame);  // Ejecutar el cuerpo del bucle
+    } else {
+      reporter.reportError("Body of 'for' loop cannot be null", "", ast.position);
+    }
+
+    encodeFetch(ast.controlVar, frame, 1);  // Cargar el valor de la variable de control
+    emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.succDisplacement); // Incrementar la variable de
+
+    encodeStore(ast.controlVar, frame, 1);  // Guardar el nuevo valor de la variable de control
+
+    // Verificar la condición de fin (E2)
+    patch(jumpAddr, nextInstrAddr);  // Actualizar el salto condicional
+    encodeFetch(ast.controlVar, frame, 1);  // Cargar nuevamente la variable de control
+    ast.endExp.visit(this, frame);  // Evaluar la expresión de fin
+    emit(Machine.CALLop, Machine.SBr, Machine.PBr, Machine.leDisplacement);  // Comparar si V <= E2
+    emit(Machine.JUMPIFop, Machine.trueRep, Machine.CBr, loopAddr);  // Si V <= E2, saltar al inicio del bucle
+
     return null;
   }
 
@@ -300,7 +316,7 @@ public final class Encoder implements Visitor {
 
   public Object visitCaseExpression(CaseExpression ast, Object o) {
 
-    System.out.println("visitCaseExpression FUNCTION WAS CALLED IN ENCODER");
+    //System.out.println("visitCaseExpression FUNCTION WAS CALLED IN ENCODER");
 
     Frame frame = (Frame) o;
 

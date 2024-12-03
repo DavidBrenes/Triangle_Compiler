@@ -73,108 +73,112 @@ final class Token extends Object {
 
   public static final int
 
-    // literals, identifiers, operators...
-    INTLITERAL	= 0,
-    CHARLITERAL	= 1,
-    IDENTIFIER	= 2,
-    OPERATOR	= 3,
+          // literals, identifiers, operators...
+          INTLITERAL	= 0,
+          CHARLITERAL	= 1,
+          IDENTIFIER	= 2,
+          OPERATOR	= 3,
 
-    // reserved words - must be in alphabetical order...
-    ARRAY		= 4,
-    BEGIN		= 5,
-    CONST		= 6,
-    DO			= 7,
-    ELSE		= 8,
-    END			= 9,
-	FOR         = 10,     
-	FROM        = 11,     
-    FUNC		= 12,
-    IF			= 13,
-    IN			= 14,
-    LET			= 15,
-    OF			= 16,
-    PROC		= 17,
-    RECORD		= 18,
-    THEN		= 19,
-	TO          = 20,    
-    TYPE		= 21,
-    VAR			= 22,
-    WHILE		= 23,
-    CASE        = 38,     
-
-    //REPEAT-JOSEPH
-
-    REPEAT = 39,  
-    UNTIL = 40,   
+  // reserved words - must be in alphabetical order...
+  ARRAY		= 4,
+          BEGIN		= 5,
+          CONST		= 6,
+          DO			= 7,
+          ELSE		= 8,
+          END			= 9,
+          FOR         = 10,
+          FROM        = 11,
+          FUNC		= 12,
+          IF			= 13,
+          IN			= 14,
+          LET			= 15,
+          OF			= 16,
+          PROC		= 17,
+          RECORD		= 18,
+          THEN		= 19,
+          TO          = 20,
+          TYPE		= 21,
+          VAR			= 22,
+          WHILE		= 23,
+          CASE        = 38,
 
 
-    DO_WHILE = 41,
+  //REPEAT-JOSEPH
 
-    // punctuation...
-    DOT			= 24,
-    COLON		= 25,
-    SEMICOLON	= 26,
-    COMMA		= 27,
-    BECOMES		= 28,
-    IS			= 29,
+  REPEAT = 39,
+          UNTIL = 40,
 
-    // brackets...
-    LPAREN		= 30,
-    RPAREN		= 31,
-    LBRACKET	= 32,
-    RBRACKET	= 33,
-    LCURLY		= 34,
-    RCURLY		= 35,
 
-    // special tokens...
-    EOT			= 36,
-    ERROR		= 37;
+  DO_WHILE = 41,
+
+  BY = 42,
+
+  // punctuation...
+  DOT			= 24,
+          COLON		= 25,
+          SEMICOLON	= 26,
+          COMMA		= 27,
+          BECOMES		= 28,
+          IS			= 29,
+
+  // brackets...
+  LPAREN		= 30,
+          RPAREN		= 31,
+          LBRACKET	= 32,
+          RBRACKET	= 33,
+          LCURLY		= 34,
+          RCURLY		= 35,
+
+  // special tokens...
+  EOT			= 36,
+          ERROR		= 37;
 
   private static String[] tokenTable = new String[] {
-    "<int>",
-    "<char>",
-    "<identifier>",
-    "<operator>",
-    "array",
-    "begin",
-    "const",
-    "do",
-    "else",
-    "end",
-	"for",         
-	"from",        
-    "func",
-    "if",
-    "in",
-    "let",
-    "of",
-    "proc",
-    "record",
-    "then",
-	"to",          //add
-    "type",
-    "var",
-    "while",
-    ".",
-    ":",
-    ";",
-    ",",
-    ":=",
-    "~",
-    "(",
-    ")",
-    "[",
-    "]",
-    "{",
-    "}",
-    "",
-    "<error>",
-    "repeat",  // Añadir
-    "until",   // Añadir
-    "case"
+          "<int>",
+          "<char>",
+          "<identifier>",
+          "<operator>",
+          "array",
+          "begin",
+          "const",
+          "do",
+          "else",
+          "end",
+          "for",
+          "from",
+          "func",
+          "if",
+          "in",
+          "let",
+          "of",
+          "proc",
+          "record",
+          "then",
+          "to",          //add
+          "type",
+          "var",
+          "while",
+          ".",
+          ":",
+          ";",
+          ",",
+          ":=",
+          "~",
+          "(",
+          ")",
+          "[",
+          "]",
+          "{",
+          "}",
+          "",
+          "<error>",
+          "repeat",  // Añadir
+          "until",   // Añadir
+          "case",
+          "by"
   };
 
   private final static int	firstReservedWord = Token.ARRAY,
-                  lastReservedWord  = Token.UNTIL;
+          lastReservedWord  = Token.UNTIL;
 
 }

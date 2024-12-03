@@ -1,8 +1,11 @@
 let
-    var i: Integer
+    var age : Integer
 in
-    i := 0;
-    repeat
-        i := i + 1
-    until i >= 5
-end
+    begin
+        age := 20;
+        case age of
+            20 : putint(1)
+            25 : putint(5)
+            30 : putint(10)
+        end;
+    end
