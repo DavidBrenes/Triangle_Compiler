@@ -1,0 +1,11 @@
+let
+    var x: Integer
+    var y: Integer
+in
+    x := 0;
+    y := 2;
+    repeat
+        x := x + 1;
+        y := y + 1
+    until (x > 3) && (y >= 4)
+end

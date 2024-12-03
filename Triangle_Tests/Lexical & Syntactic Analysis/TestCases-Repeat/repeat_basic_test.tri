@@ -1,0 +1,14 @@
+let
+  var i: Integer
+in
+  begin
+    i := 0;
+
+    repeat
+      begin
+        i := i + 1;
+        putint(i)
+      end
+    until (i > 10)
+    end
+  end

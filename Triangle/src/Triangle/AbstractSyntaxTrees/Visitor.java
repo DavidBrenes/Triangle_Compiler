@@ -12,7 +12,12 @@
  * of the authors.
  */
 
+
 package Triangle.AbstractSyntaxTrees;
+
+
+import Triangle.AbstractSyntaxTrees.RepeatCommand;
+
 
 public interface Visitor {
 
@@ -26,6 +31,7 @@ public interface Visitor {
   public abstract Object visitWhileCommand(WhileCommand ast, Object o);
   public abstract Object visitForCommand(ForCommand ast, Object o);
   public abstract Object visitCaseCommand(CaseCommand caseCommand, Object o);
+  public abstract Object visitRepeatCommand(RepeatCommand ast, Object o); // Añadir este método
 
   // Expressions
   public abstract Object visitArrayExpression(ArrayExpression ast, Object o);
@@ -102,6 +108,9 @@ public interface Visitor {
   public abstract Object visitDotVname(DotVname ast, Object o);
   public abstract Object visitSimpleVname(SimpleVname ast, Object o);
   public abstract Object visitSubscriptVname(SubscriptVname ast, Object o);
+
+
+  public abstract Object visitDoWhileCommand(DoWhileCommand ast, Object o);
 
   // Programs
   public abstract Object visitProgram(Program ast, Object o);
